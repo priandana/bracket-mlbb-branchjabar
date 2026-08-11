@@ -39,7 +39,7 @@ function getFormat(round, total) {
  * Get human-readable round name
  */
 function getRoundName(round, total) {
-  const fromEnd = total - round; // 0 = final, 1 = SF, 2 = QF, ...
+  const fromEnd = total - round;
   if (fromEnd === 0) return 'Grand Final';
   if (fromEnd === 1) return 'Semi Final';
   if (fromEnd === 2) return 'Quarter Final';
@@ -50,7 +50,6 @@ function getRoundName(round, total) {
 
 /**
  * Calculate BO3 score from games object
- * Returns { t1wins, t2wins, winner }
  */
 function calcBO3(games, team1Id, team2Id) {
   let t1 = 0, t2 = 0;
@@ -68,7 +67,6 @@ function calcBO3(games, team1Id, team2Id) {
 
 /**
  * Get next match info that a winner should advance to
- * Returns { matchId, slot } or null if final round
  */
 function getNextMatchInfo(currentRound, currentPosition, totalRounds) {
   if (currentRound >= totalRounds) return null;
@@ -79,12 +77,7 @@ function getNextMatchInfo(currentRound, currentPosition, totalRounds) {
 }
 
 /**
- * Generate full bracket object from an array of custom Round 1 match pairings.
- *
- * @param {Array} pairings - Array of Round 1 match objects:
- *   [ { team1: teamObj|null, team2: teamObj|null }, ... ]
- * @param {number} totalRounds
- * @param {number} bracketSize
+ * Generate full bracket object from custom Round 1 pairings.
  */
 function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
   const matches = {};
@@ -150,6 +143,35 @@ function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
         const nextId  = `r2_m${nextPos}`;
         const slot    = pos % 2 === 0 ? 'team1' : 'team2';
         if (matches[nextId]) matches[nextId][slot] = m.winner;
+      }
+    }
+
+    // ── 4. Cascade check for Round 2 matches that become BYEs ──
+    const numR2 = bracketSize / 4;
+    for (let pos = 0; pos < numR2; pos++) {
+      const m = matches[`r2_m${pos}`];
+      if (m) {
+        const t1 = m.team1;
+        const t2 = m.team2;
+        // If one team is present and the other slot came from an empty BYE, auto-advance
+        if ((t1 && !t2) || (!t1 && t2)) {
+          // Check if the other slot was from an empty R1 match
+          const r1Pos1 = pos * 2;
+          const r1Pos2 = pos * 2 + 1;
+          const r1m1 = matches[`r1_m${r1Pos1}`];
+          const r1m2 = matches[`r1_m${r1Pos2}`];
+
+          // If one R1 match was completely empty (no teams), advance the team in R2
+          if ((r1m1 && !r1m1.team1 && !r1m1.team2) || (r1m2 && !r1m2.team1 && !r1m2.team2)) {
+            m.winner = t1 || t2;
+            m.isBye = true;
+            m.status = 'done';
+            const nextInfo = getNextMatchInfo(2, pos, totalRounds);
+            if (nextInfo && matches[nextInfo.matchId]) {
+              matches[nextInfo.matchId][nextInfo.slot] = m.winner;
+            }
+          }
+        }
       }
     }
   }
