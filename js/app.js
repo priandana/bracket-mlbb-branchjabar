@@ -261,8 +261,8 @@ function drawConnectors(rounds, totalRounds) {
 function addPath(svg, d) {
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
-  p.setAttribute('stroke', '#94A3B8');
-  p.setAttribute('stroke-width', '1.5');
+  p.setAttribute('stroke', '#FFFFFF'); // crisp white Challonge connector line
+  p.setAttribute('stroke-width', '1.8');
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke-linecap', 'square');
   svg.appendChild(p);
