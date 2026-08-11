@@ -1,9 +1,8 @@
 // =====================================================
-// BRACKET VIEWER — app.js  (Challonge-style layout)
+// BRACKET VIEWER — app.js (Perfect Symmetrical Layout)
 // =====================================================
 
-const SLOT_H  = 90;   // px per bracket slot (base unit)
-const CARD_H  = 102;  // estimated match card height for vertical centering
+const SLOT_H = 90; // base slot height per match in Round 1 (px)
 
 let _teams   = {};
 let _matches = {};
@@ -35,7 +34,7 @@ function showEmpty() {
     <div class="empty-state">
       <span class="emoji">⚔️</span>
       <h2>Bracket Belum Tersedia</h2>
-      <p>Administrator sedang mempersiapkan turnamen. Bracket akan muncul setelah dibuat.</p>
+      <p>Administrator sedang mempersiapkan turnamen. Bracket akan muncul di sini setelah dibuat.</p>
       <a href="admin.html" class="btn btn-primary">Buka Panel Admin</a>
     </div>`;
 }
@@ -44,12 +43,12 @@ function showEmpty() {
 function renderBracket() {
   const { totalRounds, bracketSize } = _meta;
 
-  // ── Correct bracket height: (bracketSize/2) * SLOT_H ──
-  // e.g. 16-bracket: (16/2)*90 = 720px
-  // This ensures all rounds share the same total height.
+  // Total height for round container: (bracketSize / 2) * SLOT_H
+  // e.g. bracketSize=16 -> (16/2)*90 = 720px
+  // e.g. bracketSize=8  -> (8/2)*90  = 360px
   const BRACKET_H = (bracketSize / 2) * SLOT_H;
 
-  // Group & sort matches by round
+  // Group matches by round & sort by position
   const rounds = {};
   for (const id in _matches) {
     const m = _matches[id];
@@ -58,55 +57,19 @@ function renderBracket() {
   }
   for (const r in rounds) rounds[r].sort((a, b) => a.position - b.position);
 
-  // ── Detect "preliminary" round ──
-  // Round 1 may have many byes. If so, we show it as a compact
-  // "preliminary" column where real matches are absolutely-positioned
-  // to align with their QF counterparts (Challonge style).
-  const r1Matches  = rounds[1] || [];
-  const r1Real     = r1Matches.filter(m => !m.isBye);
-  const hasPrelim  = r1Real.length > 0 && r1Real.length < r1Matches.length;
-  const mainStart  = hasPrelim ? 2 : 1;
-
-  // QF slot height (first main round)
-  const numQFMatches = bracketSize / Math.pow(2, mainStart);
-  const qfSlotH      = BRACKET_H / numQFMatches; // e.g. 720/4 = 180px
-
-  // Champion
+  // Check champion
   const finalRound = rounds[totalRounds] || [];
   const champion   = finalRound.length > 0 && finalRound[0].winner
     ? _teams[finalRound[0].winner] : null;
 
+  // Start building HTML
   let html = '<div class="bracket-wrap" id="bracket-wrap">';
+  html += `<svg id="bracket-svg" xmlns="http://www.w3.org/2000/svg"></svg>`;
 
-  // ── PRELIMINARY COLUMN (if needed) ────────────────
-  if (hasPrelim) {
-    html += `
-      <div class="prelim-col" id="prelim-col"
-           style="position:relative;width:200px;height:${BRACKET_H}px;flex-shrink:0;">`;
-
-    for (const m of r1Real) {
-      // The next round (QF) match position this preliminary match feeds into
-      const nextPos = Math.floor(m.position / 2);
-      const centerY = nextPos * qfSlotH + qfSlotH / 2;
-      const topY    = Math.max(0, centerY - CARD_H / 2);
-
-      html += `
-        <div class="prelim-slot" data-match-id="${m.id}"
-             style="position:absolute;top:${topY}px;left:0;width:200px;">
-          ${renderMatchCard(m)}
-        </div>`;
-    }
-
-    html += `</div>`;
-    // Small gap between prelim and QF
-    html += `<div class="connector-gap" id="prelim-gap"
-               style="width:48px;height:${BRACKET_H}px;flex-shrink:0;"></div>`;
-  }
-
-  // ── MAIN ROUNDS ───────────────────────────────────
-  for (let r = mainStart; r <= totalRounds; r++) {
+  for (let r = 1; r <= totalRounds; r++) {
     const rMatches  = rounds[r] || [];
-    const slotH     = SLOT_H * Math.pow(2, r - 1); // slot height doubles each round
+    const numMatches = bracketSize / Math.pow(2, r);
+    const slotH     = BRACKET_H / numMatches; // perfect mathematical slot height
     const isBO3     = rMatches.length > 0 && rMatches[0].format === 'BO3';
     const roundName = rMatches.length > 0 ? rMatches[0].roundName : `Round ${r}`;
 
@@ -126,13 +89,13 @@ function renderBracket() {
 
     html += `</div></div>`;
 
+    // Connector gap between round columns
     if (r < totalRounds) {
-      html += `<div class="connector-gap" id="cgap-${r}"
-                 style="width:48px;height:${BRACKET_H + 60}px;flex-shrink:0;"></div>`;
+      html += `<div class="connector-gap" id="cgap-${r}" style="width:48px;height:${BRACKET_H}px;flex-shrink:0;"></div>`;
     }
   }
 
-  // ── CHAMPION ──────────────────────────────────────
+  // Champion card on far right
   if (champion) {
     html += `
       <div class="champion-wrap">
@@ -147,15 +110,30 @@ function renderBracket() {
   html += '</div>';
 
   const root = document.getElementById('bracket-root');
-  root.innerHTML = `<svg id="bracket-svg" xmlns="http://www.w3.org/2000/svg"></svg>` + html;
+  root.innerHTML = html;
 
-  requestAnimationFrame(() =>
-    drawConnectors(rounds, mainStart, totalRounds, BRACKET_H, qfSlotH, r1Real, hasPrelim)
-  );
+  // Draw lines after layout settles
+  requestAnimationFrame(() => drawConnectors(rounds, totalRounds));
 }
 
-// ── Match Card HTML ───────────────────────────────────
+// ── Match Card ────────────────────────────────────────
 function renderMatchCard(m) {
+  // BYE Card handling
+  if (m.isBye) {
+    const winnerTeam = m.winner ? _teams[m.winner] : null;
+    const name = winnerTeam ? esc(winnerTeam.name) : 'BYE';
+    const seed = winnerTeam ? winnerTeam.seed : '';
+    return `
+      <div class="match-card bye-card" data-id="${m.id}">
+        <div class="team-slot winner">
+          <span class="team-seed">${seed}</span>
+          <span class="team-name">${name}</span>
+          <div class="team-score bye-tag">PASS</div>
+        </div>
+        <div class="tbd-slot" style="height:28px;font-size:0.7rem;color:var(--text-3);">BYE</div>
+      </div>`;
+  }
+
   const t1 = m.team1 ? _teams[m.team1] : null;
   const t2 = m.team2 ? _teams[m.team2] : null;
 
@@ -174,10 +152,10 @@ function renderMatchCard(m) {
   const isDone = m.status === 'done';
 
   let cardCls = 'match-card';
-  if (isDone)                      cardCls += ' done';
-  else if (m.team1 && m.team2)     cardCls += ' active';
+  if (isDone)                  cardCls += ' done';
+  else if (m.team1 || m.team2) cardCls += ' active';
 
-  // Map dots (BO3 only)
+  // Map dots (BO3)
   let mapDots = '';
   if (m.format === 'BO3') {
     mapDots = '<div class="map-scores">';
@@ -220,53 +198,32 @@ function teamRow(team, teamId, score, isWin, isLose) {
 }
 
 // ── SVG Connector Lines ───────────────────────────────
-function drawConnectors(rounds, mainStart, totalRounds, BRACKET_H, qfSlotH, r1Real, hasPrelim) {
+function drawConnectors(rounds, totalRounds) {
   const svg  = document.getElementById('bracket-svg');
   const wrap = document.getElementById('bracket-wrap');
   if (!svg || !wrap) return;
 
-  const W = wrap.scrollWidth;
-  const H = wrap.scrollHeight;
-  svg.setAttribute('width', W);
-  svg.setAttribute('height', H);
+  const wW = wrap.offsetWidth;
+  const wH = wrap.offsetHeight;
+
+  svg.setAttribute('width',  wW);
+  svg.setAttribute('height', wH);
+  svg.setAttribute('viewBox', `0 0 ${wW} ${wH}`);
   svg.innerHTML = '';
 
-  const wRect  = wrap.getBoundingClientRect();
-  const offX   = wRect.left + window.scrollX;
-  const offY   = wRect.top  + window.scrollY;
+  const wRect = wrap.getBoundingClientRect();
 
-  // ── 1. Preliminary → QF connectors ───────────────
-  if (hasPrelim) {
-    const qfMatchesEl = document.querySelectorAll(`#round-matches-${mainStart} .match-slot`);
+  // Helper to get card center relative to wrap
+  const getCardCenter = (cardEl) => {
+    const cRect = cardEl.getBoundingClientRect();
+    return {
+      left:    cRect.left - wRect.left,
+      right:   cRect.right - wRect.left,
+      centerY: (cRect.top + cRect.bottom) / 2 - wRect.top
+    };
+  };
 
-    document.querySelectorAll('.prelim-slot').forEach(ps => {
-      const card = ps.querySelector('.match-card');
-      if (!card) return;
-      const matchId = ps.dataset.matchId;
-      const m       = _matches[matchId];
-      if (!m) return;
-
-      const nextPos  = Math.floor(m.position / 2);
-      const qfSlot   = qfMatchesEl[nextPos];
-      if (!qfSlot) return;
-      const qfCard   = qfSlot.querySelector('.match-card');
-      if (!qfCard) return;
-
-      const rC  = card.getBoundingClientRect();
-      const rQF = qfCard.getBoundingClientRect();
-
-      const x1   = rC.right   - offX;
-      const y1   = (rC.top + rC.bottom) / 2 - offY;
-      const xEnd = rQF.left   - offX;
-      const yEnd = (rQF.top + rQF.bottom) / 2 - offY;
-      const midX = x1 + (xEnd - x1) * 0.55;
-
-      addPath(svg, `M ${x1} ${y1} H ${midX} V ${yEnd} H ${xEnd}`);
-    });
-  }
-
-  // ── 2. Main round → next round connectors ─────────
-  for (let r = mainStart; r < totalRounds; r++) {
+  for (let r = 1; r < totalRounds; r++) {
     const curSlots  = document.querySelectorAll(`#round-matches-${r} .match-slot`);
     const nextSlots = document.querySelectorAll(`#round-matches-${r + 1} .match-slot`);
 
@@ -274,29 +231,30 @@ function drawConnectors(rounds, mainStart, totalRounds, BRACKET_H, qfSlotH, r1Re
       const nextCard = nextSlot.querySelector('.match-card');
       if (!nextCard) return;
 
-      const src1 = curSlots[ni * 2];
-      const src2 = curSlots[ni * 2 + 1];
-      if (!src1 || !src2) return;
+      const src1Slot = curSlots[ni * 2];
+      const src2Slot = curSlots[ni * 2 + 1];
+      if (!src1Slot || !src2Slot) return;
 
-      const getCenter = (slot) => {
-        const card = slot.querySelector('.match-card');
-        const el   = card || slot;
-        const r    = el.getBoundingClientRect();
-        return {
-          x: r.right - offX,
-          y: (r.top + r.bottom) / 2 - offY
-        };
-      };
+      const src1Card = src1Slot.querySelector('.match-card');
+      const src2Card = src2Slot.querySelector('.match-card');
+      if (!src1Card || !src2Card) return;
 
-      const p1   = getCenter(src1);
-      const p2   = getCenter(src2);
-      const rN   = nextCard.getBoundingClientRect();
-      const xEnd = rN.left - offX;
-      const yEnd = (rN.top + rN.bottom) / 2 - offY;
-      const midX = p1.x + (xEnd - p1.x) * 0.5;
+      const p1 = getCardCenter(src1Card);
+      const p2 = getCardCenter(src2Card);
+      const pN = getCardCenter(nextCard);
 
-      addPath(svg, `M ${p1.x} ${p1.y} H ${midX} V ${yEnd} H ${xEnd}`);
-      addPath(svg, `M ${p2.x} ${p2.y} H ${midX}`);
+      const x1   = p1.right;
+      const y1   = p1.centerY;
+      const x2   = p2.right;
+      const y2   = p2.centerY;
+      const xEnd = pN.left;
+      const yEnd = pN.centerY;
+      const midX = x1 + (xEnd - x1) * 0.5;
+
+      // Line 1: Top match -> midX -> yEnd -> xEnd
+      addPath(svg, `M ${x1} ${y1} H ${midX} V ${yEnd} H ${xEnd}`);
+      // Line 2: Bottom match -> midX -> yEnd
+      addPath(svg, `M ${x2} ${y2} H ${midX} V ${yEnd}`);
     });
   }
 }
@@ -304,7 +262,7 @@ function drawConnectors(rounds, mainStart, totalRounds, BRACKET_H, qfSlotH, r1Re
 function addPath(svg, d) {
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
-  p.setAttribute('stroke', '#CBD5E1');
+  p.setAttribute('stroke', '#94A3B8'); // crisp slate border color
   p.setAttribute('stroke-width', '1.5');
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke-linecap', 'square');
@@ -319,7 +277,14 @@ function esc(s) {
 
 window.addEventListener('resize', () => {
   if (!_meta.totalRounds || !Object.keys(_matches).length) return;
-  tryRender();
+  const rounds = {};
+  for (const id in _matches) {
+    const m = _matches[id];
+    if (!rounds[m.round]) rounds[m.round] = [];
+    rounds[m.round].push(m);
+  }
+  for (const r in rounds) rounds[r].sort((a, b) => a.position - b.position);
+  drawConnectors(rounds, _meta.totalRounds);
 });
 
 document.addEventListener('DOMContentLoaded', initViewer);
