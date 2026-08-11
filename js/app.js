@@ -137,14 +137,28 @@ function renderBracket() {
   requestAnimationFrame(() => drawConnectors(rounds, totalRounds));
 }
 
+// ── Helper to detect dead unused bracket slots ────────
+function isDeadSlot(m, matches) {
+  if (!m) return true;
+  if (m.team1 || m.team2) return false;
+  if (m.round === 1) {
+    return !m.team1 && !m.team2;
+  }
+  const prevRound = m.round - 1;
+  const src1 = matches[`r${prevRound}_m${m.position * 2}`];
+  const src2 = matches[`r${prevRound}_m${m.position * 2 + 1}`];
+  return isDeadSlot(src1, matches) && isDeadSlot(src2, matches);
+}
+
 // ── Match Card HTML ───────────────────────────────────
 function renderMatchCard(m) {
+  // Hide dead dummy slots that will never receive teams
+  if (isDeadSlot(m, _matches)) {
+    return `<div class="bye-spacer"></div>`;
+  }
+
   if (m.isBye) {
     const winnerTeam = m.winner ? _teams[m.winner] : null;
-    // Unused dummy BYE slot — render invisible spacer to prevent clutter
-    if (!winnerTeam && !m.team1 && !m.team2) {
-      return `<div class="bye-spacer"></div>`;
-    }
     const name = winnerTeam ? esc(winnerTeam.name) : 'BYE';
     const seed = winnerTeam ? winnerTeam.seed : '';
     return `
