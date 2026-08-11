@@ -211,29 +211,34 @@ function getInitials(name) {
   return name.substring(0, 2).toUpperCase();
 }
 
-// ── SVG Connectors ────────────────────────────────────
+// ── SVG Connectors (Untransformed Native Coordinates) ──
 function drawConnectors(rounds, totalRounds) {
   const svg  = document.getElementById('bracket-svg');
   const wrap = document.getElementById('bracket-wrap');
   if (!svg || !wrap) return;
 
-  const wW = wrap.offsetWidth;
-  const wH = wrap.offsetHeight;
+  const wW = wrap.scrollWidth  || wrap.offsetWidth;
+  const wH = wrap.scrollHeight || wrap.offsetHeight;
 
   svg.setAttribute('width',  wW);
   svg.setAttribute('height', wH);
   svg.setAttribute('viewBox', `0 0 ${wW} ${wH}`);
   svg.innerHTML = '';
 
-  const wRect = wrap.getBoundingClientRect();
-
+  // Helper to get untransformed card center relative to wrap container
   const getCardCenter = (cardEl) => {
-    const cRect = cardEl.getBoundingClientRect();
-    const zoom = _zoomLevel || 1.0;
+    let top = 0;
+    let left = 0;
+    let el = cardEl;
+    while (el && el !== wrap) {
+      top  += el.offsetTop;
+      left += el.offsetLeft;
+      el    = el.offsetParent;
+    }
     return {
-      left:    (cRect.left - wRect.left) / zoom,
-      right:   (cRect.right - wRect.left) / zoom,
-      centerY: ((cRect.top + cRect.bottom) / 2 - wRect.top) / zoom
+      left:    left,
+      right:   left + cardEl.offsetWidth,
+      centerY: top  + cardEl.offsetHeight / 2
     };
   };
 
