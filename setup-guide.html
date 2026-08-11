@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup Guide — ML Bracket</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .guide-body { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 48px 24px 80px; }
+    .step { counter-increment: steps; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 20px; position: relative; }
+    .step-num { position: absolute; top: -14px; left: 24px; background: var(--gold-500); color: #1A0E00; font-family: var(--font-label); font-weight: 700; font-size: .75rem; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
+    .step-title { font-family: var(--font-label); font-size: 1.1rem; font-weight: 700; color: var(--gold-500); margin-bottom: 12px; }
+    .step p { color: var(--text-300); font-size: .9rem; line-height: 1.75; margin-bottom: 10px; }
+    .step code { background: rgba(201,162,39,0.1); color: var(--gold-400); padding: 2px 7px; border-radius: 4px; font-size: .85rem; border: 1px solid var(--gold-700); }
+    .step pre { background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; font-size: .82rem; color: var(--text-300); line-height: 1.6; }
+    .step .note { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.25); border-radius: 8px; padding: 12px 16px; color: var(--blue-400); font-size: .82rem; margin-top: 12px; }
+    .step .warning { background: rgba(255,23,68,0.08); border: 1px solid rgba(255,23,68,0.25); border-radius: 8px; padding: 12px 16px; color: var(--red-400); font-size: .82rem; margin-top: 12px; }
+    .guide-header { text-align: center; padding: 40px 0 36px; }
+  </style>
+</head>
+<body>
+  <div class="bg-fx" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+  </div>
+
+  <div class="guide-body">
+    <div class="guide-header">
+      <div class="logo-text site-header" style="border:none;background:none;padding:0">
+        <div class="logo-text" style="font-family:var(--font-title);font-size:1.6rem;background:linear-gradient(135deg,#FDE68A,#C9A227);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">📖 Panduan Setup Firebase</div>
+      </div>
+      <p style="color:var(--text-500);margin-top:12px;font-size:.9rem">Ikuti langkah-langkah berikut untuk menghubungkan web ini dengan Firebase.</p>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-num">Langkah 1</div>
+      <div class="step-title">Buat Project Firebase</div>
+      <p>Buka <a href="https://console.firebase.google.com" target="_blank" style="color:var(--blue-400)">console.firebase.google.com</a> dan login dengan akun Google kamu.</p>
+      <p>Klik tombol <strong>"Add project"</strong> → isi nama project (contoh: <code>ml-bracket</code>) → klik Continue → (opsional) aktifkan Google Analytics → klik <strong>"Create project"</strong>.</p>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-num">Langkah 2</div>
+      <div class="step-title">Aktifkan Realtime Database</div>
+      <p>Di sidebar kiri Firebase Console, klik <strong>Build → Realtime Database</strong>.</p>
+      <p>Klik <strong>"Create database"</strong> → pilih lokasi server (pilih <code>asia-southeast1</code> untuk Indonesia) → pilih <strong>"Start in test mode"</strong> → klik Enable.</p>
+      <div class="note">⚠️ "Test mode" membuat database terbuka untuk baca/tulis selama 30 hari. Ini cukup untuk keperluan turnamen. Setelah turnamen selesai, ubah rules-nya.</div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-num">Langkah 3</div>
+      <div class="step-title">Daftarkan Web App</div>
+      <p>Di Project Overview, klik ikon <strong>&lt;/&gt;</strong> (Web) untuk menambahkan web app.</p>
+      <p>Isi nama app (contoh: <code>ML Bracket Web</code>) → klik <strong>"Register app"</strong>.</p>
+      <p>Firebase akan menampilkan <strong>firebaseConfig</strong> — salin seluruh object tersebut.</p>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-num">Langkah 4</div>
+      <div class="step-title">Paste Config ke firebase-config.js</div>
+      <p>Buka file <code>js/firebase-config.js</code> di folder project ini, lalu ganti bagian <code>firebaseConfig</code> dengan config yang kamu dapat dari Firebase:</p>
+      <pre>const firebaseConfig = {
+  apiKey:            "AIzaSy...",
+  authDomain:        "ml-bracket.firebaseapp.com",
+  databaseURL:       "https://ml-bracket-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "ml-bracket",
+  storageBucket:     "ml-bracket.appspot.com",
+  messagingSenderId: "123456789",
+  appId:             "1:123456789:web:abcdef..."
+};</pre>
+      <div class="warning">⚠️ Pastikan <code>databaseURL</code> diisi dengan benar! Cek di Firebase Console → Realtime Database → URL di bagian atas halaman.</div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-num">Langkah 5</div>
+      <div class="step-title">Jalankan via HTTP Server (Wajib!)</div>
+      <p>Web ini TIDAK bisa dibuka langsung dari file (protokol <code>file://</code>) karena Firebase memerlukan HTTP. Gunakan salah satu cara berikut:</p>
+      <p><strong>Opsi A — npx serve (termudah, perlu Node.js):</strong></p>
+      <pre>cd "d:/Bracket Mobile Legend"
+npx serve .</pre>
+      <p>Kemudian buka <code>http://localhost:3000</code> di browser.</p>
+      <p><strong>Opsi B — VS Code Live Server:</strong><br>Install extension "Live Server" di VS Code → klik kanan <code>index.html</code> → Open with Live Server.</p>
+      <p><strong>Opsi C — Host di internet (gratis):</strong><br>Upload ke <a href="https://pages.github.com" target="_blank" style="color:var(--blue-400)">GitHub Pages</a>, <a href="https://netlify.com" target="_blank" style="color:var(--blue-400)">Netlify</a>, atau <a href="https://vercel.com" target="_blank" style="color:var(--blue-400)">Vercel</a> agar bisa diakses semua orang via link.</p>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <div class="step-num">Langkah 6</div>
+      <div class="step-title">Login & Setup Turnamen</div>
+      <p>Buka <code>admin.html</code> di browser → masuk dengan password default: <code>admin123</code></p>
+      <p>Di tab <strong>Setup Turnamen</strong>:</p>
+      <p>1. Isi nama turnamen<br>2. Atur jumlah tim (slider)<br>3. Isi nama tiap tim<br>4. Klik <strong>"Simpan Pengaturan"</strong><br>5. Klik <strong>"Generate Bracket"</strong></p>
+      <p>Bracket akan otomatis muncul di <code>index.html</code> secara real-time!</p>
+      <div class="note">💡 Ganti password default segera di tab <strong>Pengaturan → Ganti Password</strong>.</div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="step">
+      <div class="step-num">Langkah 7</div>
+      <div class="step-title">Bagikan Link ke Penonton</div>
+      <p>Bagikan URL <code>index.html</code> (atau link hosting) ke seluruh peserta dan penonton. Mereka akan melihat bracket update secara real-time tanpa perlu refresh!</p>
+      <p>Admin bisa input skor di <code>admin.html</code> kapan saja.</p>
+    </div>
+
+    <div style="text-align:center;margin-top:36px">
+      <a href="index.html" class="btn btn-ghost" style="margin-right:12px">👁️ Lihat Bracket</a>
+      <a href="admin.html" class="btn btn-primary">⚙️ Panel Admin</a>
+    </div>
+  </div>
+</body>
+</html>
