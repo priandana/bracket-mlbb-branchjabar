@@ -34,8 +34,8 @@
   --shadow-lg:   0 12px 30px rgba(0,0,0,0.6);
 
   --card-w:      215px;
-  --row-h:       38px;
-  --slot-h:      90px;
+  --row-h:       34px;
+  --slot-h:      110px;
   --radius:      8px;
 
   --font: 'Inter', system-ui, sans-serif;
@@ -286,6 +286,13 @@ body {
   opacity: 0.65;
   background: #1E212B;
   border-style: dashed;
+}
+
+.bye-spacer {
+  width: var(--card-w);
+  height: 84px;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Team row */

@@ -3,7 +3,7 @@
 // Symmetrical layout, Zoom & Pan, Clean Animated Match Modal
 // =====================================================
 
-const SLOT_H = 90; // base slot height per match in Round 1 (px)
+const SLOT_H = 110; // base slot height per match in Round 1 (px) — 110px ensures no vertical overlap
 
 let _teams   = {};
 let _matches = {};
@@ -12,7 +12,6 @@ let _zoomLevel = 1.0;
 
 // ── Init ─────────────────────────────────────────────
 function initViewer() {
-  // Safety timeout: hide spinner if data takes > 4 seconds or is empty
   setTimeout(hideLoadingSpinner, 4000);
 
   db.ref(`${ROOT}/settings`).on('value', snap => {
@@ -142,6 +141,10 @@ function renderBracket() {
 function renderMatchCard(m) {
   if (m.isBye) {
     const winnerTeam = m.winner ? _teams[m.winner] : null;
+    // Unused dummy BYE slot — render invisible spacer to prevent clutter
+    if (!winnerTeam && !m.team1 && !m.team2) {
+      return `<div class="bye-spacer"></div>`;
+    }
     const name = winnerTeam ? esc(winnerTeam.name) : 'BYE';
     const seed = winnerTeam ? winnerTeam.seed : '';
     return `
@@ -151,7 +154,7 @@ function renderMatchCard(m) {
           <span class="team-name">${name}</span>
           <div class="team-score bye-tag">PASS</div>
         </div>
-        <div class="tbd-slot" style="height:28px;font-size:0.7rem;color:var(--text-3);">BYE</div>
+        <div class="tbd-slot" style="height:26px;font-size:0.68rem;color:var(--text-4);">BYE</div>
       </div>`;
   }
 
