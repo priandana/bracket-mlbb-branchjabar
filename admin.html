@@ -109,16 +109,33 @@
           </p>
         </div>
 
-        <!-- Nama tim -->
+        <!-- Team Names -->
         <div class="panel">
-          <div class="panel-title">Nama Tim</div>
+          <div class="panel-title">📋 Nama Tim</div>
           <div class="team-inputs" id="team-inputs-grid"></div>
+        </div>
+
+        <!-- Custom Matchup Builder (Siapa Lawan Siapa) -->
+        <div class="panel">
+          <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>⚔️ Pengaturan Matchup (Siapa Lawan Siapa)</span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-secondary btn-sm" id="btn-shuffle-matchups" type="button">🔀 Acak Lawan</button>
+              <button class="btn btn-secondary btn-sm" id="btn-reset-matchups" type="button">🔄 Reset Default</button>
+            </div>
+          </div>
+          <p style="font-size:.78rem;color:var(--text-3);margin-bottom:14px">
+            Atur sendiri pertandingan Ronde 1. Pilih tim atau seret (drag) untuk mengubah siapa bertemu siapa.
+          </p>
+          <div class="matchup-builder-grid" id="matchup-builder-grid">
+            <!-- Populated dynamically by admin.js -->
+          </div>
         </div>
 
         <!-- Actions -->
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <button class="btn btn-secondary" id="save-setup-btn">💾 Simpan</button>
-          <button class="btn btn-primary" id="generate-bracket-btn">⚡ Generate Bracket</button>
+          <button class="btn btn-secondary" id="save-setup-btn">💾 Simpan Nama Tim</button>
+          <button class="btn btn-primary" id="generate-bracket-btn">⚡ Simpan & Generate Bracket</button>
         </div>
         <p style="font-size:.75rem;color:var(--text-3);margin-top:10px">
           ⚠️ Generate Bracket akan menghapus semua data pertandingan. Gunakan hanya di awal turnamen.

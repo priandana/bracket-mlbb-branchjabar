@@ -1,10 +1,10 @@
 // =====================================================
-// BRACKET LOGIC
-// Single-elimination bracket generator
+// BRACKET LOGIC — bracket.js
+// Supports standard seeding & custom manual pairings
 // =====================================================
 
 /**
- * Get the smallest power of 2 >= n
+ * Get smallest power of 2 >= n
  */
 function nextPowerOf2(n) {
   let p = 1;
@@ -13,8 +13,7 @@ function nextPowerOf2(n) {
 }
 
 /**
- * Generate standard bracket seed order for a given bracket size.
- * Ensures balanced seeding (e.g. 1 vs 2 only in finals).
+ * Standard bracket seed order generator
  * For size 8  → [1, 8, 5, 4, 3, 6, 7, 2]
  * For size 16 → [1, 16, 9, 8, 5, 12, 13, 4, 3, 14, 11, 6, 7, 10, 15, 2]
  */
@@ -31,8 +30,6 @@ function generateSeeds(size) {
 
 /**
  * Get match format: last 2 rounds are BO3, rest BO1
- * @param {number} round  1-indexed round number
- * @param {number} total  total rounds in bracket
  */
 function getFormat(round, total) {
   return round >= total - 1 ? 'BO3' : 'BO1';
@@ -52,47 +49,57 @@ function getRoundName(round, total) {
 }
 
 /**
- * Build the full bracket data structure from a list of team objects.
- * Each team must have: { id, name, seed }
- *
- * Returns:
- * {
- *   bracketSize,
- *   totalRounds,
- *   matches: { [matchId]: matchObj }
- * }
- *
- * matchObj:
- * {
- *   id, round, position, roundName, format,
- *   team1, team2, winner, isBye, status,
- *   games: { g1: null|teamId, g2: null|teamId, g3: null|teamId }
- * }
+ * Calculate BO3 score from games object
+ * Returns { t1wins, t2wins, winner }
  */
-function generateBracket(teams) {
-  const n           = teams.length;
-  const bracketSize = nextPowerOf2(n);
-  const totalRounds = Math.log2(bracketSize);
-  const seedOrder   = generateSeeds(bracketSize);
+function calcBO3(games, team1Id, team2Id) {
+  let t1 = 0, t2 = 0;
+  if (games) {
+    for (const g of ['g1', 'g2', 'g3']) {
+      if (games[g] === team1Id) t1++;
+      else if (games[g] === team2Id) t2++;
+    }
+  }
+  let winner = null;
+  if (t1 >= 2) winner = team1Id;
+  else if (t2 >= 2) winner = team2Id;
+  return { t1wins: t1, t2wins: t2, winner };
+}
 
-  // Map seed position → team (null = bye)
-  const slots = seedOrder.map(seed => {
-    const idx = seed - 1;
-    return idx < n ? teams[idx] : null;
-  });
+/**
+ * Get next match info that a winner should advance to
+ * Returns { matchId, slot } or null if final round
+ */
+function getNextMatchInfo(currentRound, currentPosition, totalRounds) {
+  if (currentRound >= totalRounds) return null;
+  const nextRound = currentRound + 1;
+  const nextPos   = Math.floor(currentPosition / 2);
+  const slot      = currentPosition % 2 === 0 ? 'team1' : 'team2';
+  return { matchId: `r${nextRound}_m${nextPos}`, slot };
+}
 
+/**
+ * Generate full bracket object from an array of custom Round 1 match pairings.
+ *
+ * @param {Array} pairings - Array of Round 1 match objects:
+ *   [ { team1: teamObj|null, team2: teamObj|null }, ... ]
+ * @param {number} totalRounds
+ * @param {number} bracketSize
+ */
+function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
   const matches = {};
 
-  // ── Round 1 ──────────────────────────────────────
-  const r1format   = getFormat(1, totalRounds);
+  // ── 1. Round 1 ─────────────────────────────────────
+  const r1format    = getFormat(1, totalRounds);
   const r1RoundName = getRoundName(1, totalRounds);
+  const numR1       = bracketSize / 2;
 
-  for (let i = 0; i < bracketSize; i += 2) {
-    const pos = i / 2;
-    const t1  = slots[i];
-    const t2  = slots[i + 1];
-    const isBye = !t1 || !t2;
-    const winner  = isBye ? (t1 ? t1.id : t2 ? t2.id : null) : null;
+  for (let pos = 0; pos < numR1; pos++) {
+    const pair = pairings[pos] || { team1: null, team2: null };
+    const t1   = pair.team1;
+    const t2   = pair.team2;
+    const isBye = (!t1 && !t2) || (!t1 && t2) || (t1 && !t2);
+    const winner = isBye ? (t1 ? t1.id : t2 ? t2.id : null) : null;
 
     const id = `r1_m${pos}`;
     matches[id] = {
@@ -110,10 +117,10 @@ function generateBracket(teams) {
     };
   }
 
-  // ── Rounds 2…totalRounds (empty shells) ──────────
+  // ── 2. Rounds 2 ... totalRounds ────────────────────
   for (let r = 2; r <= totalRounds; r++) {
     const numMatches = bracketSize / Math.pow(2, r);
-    const fmt  = getFormat(r, totalRounds);
+    const fmt   = getFormat(r, totalRounds);
     const rName = getRoundName(r, totalRounds);
 
     for (let m = 0; m < numMatches; m++) {
@@ -134,9 +141,9 @@ function generateBracket(teams) {
     }
   }
 
-  // ── Auto-advance bye winners into Round 2 ────────
+  // ── 3. Auto-advance BYE winners into Round 2 ────────
   if (totalRounds >= 2) {
-    for (let pos = 0; pos < bracketSize / 2; pos++) {
+    for (let pos = 0; pos < numR1; pos++) {
       const m = matches[`r1_m${pos}`];
       if (m.isBye && m.winner) {
         const nextPos = Math.floor(pos / 2);
@@ -151,29 +158,23 @@ function generateBracket(teams) {
 }
 
 /**
- * Calculate BO3 score from games object
- * Returns { t1wins, t2wins, winner }
+ * Standard automatic bracket generator (fallback)
  */
-function calcBO3(games, team1Id, team2Id) {
-  let t1 = 0, t2 = 0;
-  for (const g of ['g1', 'g2', 'g3']) {
-    if (games[g] === team1Id) t1++;
-    else if (games[g] === team2Id) t2++;
-  }
-  let winner = null;
-  if (t1 >= 2) winner = team1Id;
-  else if (t2 >= 2) winner = team2Id;
-  return { t1wins: t1, t2wins: t2, winner };
-}
+function generateBracket(teams) {
+  const n           = teams.length;
+  const bracketSize = nextPowerOf2(n);
+  const totalRounds = Math.log2(bracketSize);
+  const seedOrder   = generateSeeds(bracketSize);
 
-/**
- * Get the next match info that a winner should advance to.
- * Returns { matchId, slot } or null if this is the final.
- */
-function getNextMatchInfo(currentRound, currentPosition, totalRounds) {
-  if (currentRound >= totalRounds) return null;
-  const nextRound = currentRound + 1;
-  const nextPos   = Math.floor(currentPosition / 2);
-  const slot      = currentPosition % 2 === 0 ? 'team1' : 'team2';
-  return { matchId: `r${nextRound}_m${nextPos}`, slot };
+  const slots = seedOrder.map(seed => {
+    const idx = seed - 1;
+    return idx < n ? teams[idx] : null;
+  });
+
+  const pairings = [];
+  for (let i = 0; i < bracketSize; i += 2) {
+    pairings.push({ team1: slots[i], team2: slots[i + 1] });
+  }
+
+  return generateBracketFromPairings(pairings, totalRounds, bracketSize);
 }

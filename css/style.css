@@ -951,3 +951,58 @@ input[type="range"]::-webkit-slider-thumb {
   .tournament-name { display: none; }
   .logo-sep { display: none; }
 }
+
+/* =====================================================
+   MATCHUP BUILDER UI (Siapa Lawan Siapa)
+   ===================================================== */
+.matchup-builder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.matchup-builder-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  transition: all 0.2s;
+}
+
+.matchup-builder-card:hover {
+  border-color: var(--blue-mid);
+  box-shadow: var(--shadow-sm);
+}
+
+.mb-match-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+.mb-select-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mb-vs {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.mb-team-select {
+  font-size: 0.8rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+}
+
