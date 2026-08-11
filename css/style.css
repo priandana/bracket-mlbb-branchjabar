@@ -732,14 +732,14 @@ input[type="range"]::-webkit-slider-thumb {
 .divider { height: 1px; background: var(--border); margin: 18px 0; }
 
 /* =====================================================
-   EPIC ANIMATED ARENA STAGE & LASER ATTACK MODAL
+   CLEAN & ANIMATED ARENA STAGE MODAL
    ===================================================== */
 .epic-modal {
-  max-width: 480px;
+  max-width: 460px;
   width: 100%;
-  background: rgba(22, 25, 34, 0.96);
+  background: rgba(26, 28, 35, 0.96);
   border: 1.5px solid var(--border-md);
-  box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 30px var(--cyan-glow);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 25px rgba(56,189,248,0.15);
   overflow: hidden !important;
 }
 
@@ -747,36 +747,35 @@ input[type="range"]::-webkit-slider-thumb {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   margin: 20px 0;
   position: relative;
-  padding: 10px 0;
-  overflow: hidden;
+  padding: 6px 0;
 }
 
-/* VS Shield Emblem */
+/* VS Shield Emblem with Entrance Bounce */
 .arena-vs-shield {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   background: linear-gradient(135deg, #1E2028, #0F172A);
   border: 2px solid var(--gold);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   color: var(--gold);
   font-family: var(--font-heading);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 800;
-  box-shadow: 0 0 14px var(--gold-glow);
+  box-shadow: 0 0 16px var(--gold-glow);
   z-index: 10;
   flex-shrink: 0;
-  animation: vsPulse 2s ease-in-out infinite;
+  animation: vsBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-@keyframes vsPulse {
-  0%,100%{ transform: scale(1); box-shadow: 0 0 14px var(--gold-glow); }
-  50%{ transform: scale(1.1); box-shadow: 0 0 22px var(--gold-glow); }
+@keyframes vsBounce {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-/* Team Arena Cards */
+/* Team Arena Cards with Pop-in */
 .arena-card {
   flex: 1;
   background: var(--surface-3);
@@ -785,19 +784,35 @@ input[type="range"]::-webkit-slider-thumb {
   padding: 16px 10px;
   text-align: center;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.25s ease;
   overflow: hidden;
   min-width: 0;
+  animation: cardPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes cardPopIn {
+  0% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.confetti-particles {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+  animation: floatStars 1.5s ease-in-out infinite alternate;
+}
+@keyframes floatStars {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-3px) scale(1.1); }
 }
 
 .arena-emblem {
-  width: 40px; height: 40px;
+  width: 42px; height: 42px;
   border-radius: 50%;
   background: linear-gradient(135deg, #333745, #1E2028);
   border: 2px solid var(--border-md);
   color: var(--cyan);
   font-family: var(--font-heading);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 800;
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 6px;
@@ -805,7 +820,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .arena-seed {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: var(--cyan);
   margin-bottom: 2px;
@@ -813,7 +828,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .arena-name {
   font-family: var(--font-heading);
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #FFFFFF;
   white-space: nowrap;
@@ -826,7 +841,6 @@ input[type="range"]::-webkit-slider-thumb {
   border-color: var(--green);
   background: linear-gradient(145deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.08));
   box-shadow: 0 0 20px var(--green-glow);
-  transform: scale(1.03);
 }
 .arena-card.winner .arena-emblem {
   background: linear-gradient(135deg, var(--green), #059669);
@@ -837,13 +851,13 @@ input[type="range"]::-webkit-slider-thumb {
 
 .victory-banner {
   font-family: var(--font-heading);
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.8px;
   color: #FFFFFF;
   background: var(--green);
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 3px 10px;
+  border-radius: 12px;
   margin-top: 6px;
   display: inline-block;
   box-shadow: 0 0 8px var(--green-glow);
@@ -858,55 +872,13 @@ input[type="range"]::-webkit-slider-thumb {
 .arena-card.defeated {
   opacity: 0.45;
   filter: grayscale(60%);
-  animation: shakeDefeated 0.4s ease;
-}
-@keyframes shakeDefeated {
-  0%,100%{ transform: translateX(0); }
-  20%,60%{ transform: translateX(-3px); }
-  40%,80%{ transform: translateX(3px); }
-}
-
-/* LASER ATTACK ANIMATION — Bounded & Responsive (Zero Scrollbar) */
-.laser-attack {
-  position: absolute;
-  top: 50%;
-  height: 4px;
-  z-index: 8;
-  pointer-events: none;
-  border-radius: 4px;
-}
-
-.laser-left-to-right {
-  left: 22%;
-  width: 56%;
-  background: linear-gradient(90deg, var(--green), var(--cyan), #FFFFFF);
-  box-shadow: 0 0 14px var(--green), 0 0 24px var(--cyan);
-  animation: laserShootLeft 0.75s ease-out forwards;
-}
-
-.laser-right-to-left {
-  right: 22%;
-  width: 56%;
-  background: linear-gradient(-90deg, var(--green), var(--cyan), #FFFFFF);
-  box-shadow: 0 0 14px var(--green), 0 0 24px var(--cyan);
-  animation: laserShootRight 0.75s ease-out forwards;
-}
-
-@keyframes laserShootLeft {
-  0% { transform: scaleX(0); transform-origin: left center; opacity: 1; }
-  60% { transform: scaleX(1); transform-origin: left center; opacity: 1; }
-  100% { transform: scaleX(1); opacity: 0; }
-}
-@keyframes laserShootRight {
-  0% { transform: scaleX(0); transform-origin: right center; opacity: 1; }
-  60% { transform: scaleX(1); transform-origin: right center; opacity: 1; }
-  100% { transform: scaleX(1); opacity: 0; }
 }
 
 .win-text {
   color: var(--green) !important;
   font-weight: 800 !important;
 }
+
 
 
 

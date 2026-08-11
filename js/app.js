@@ -1,6 +1,6 @@
 // =====================================================
 // BRACKET VIEWER — app.js
-// Symmetrical layout, Zoom & Pan, Epic Animated Match Modal
+// Symmetrical layout, Zoom & Pan, Clean Animated Match Modal
 // =====================================================
 
 const SLOT_H = 90; // base slot height per match in Round 1 (px)
@@ -322,7 +322,7 @@ function applyZoom() {
   }
 }
 
-// ── EPIC ANIMATED MATCH DETAIL MODAL ─────────────────
+// ── CLEAN & ELEGANT MATCH DETAIL MODAL ────────────────
 function attachCardClickHandlers() {
   document.querySelectorAll('.match-card.clickable').forEach(card => {
     card.addEventListener('click', () => {
@@ -353,14 +353,6 @@ function openViewerMatchModal(matchId) {
   let statusBadge = '<span class="status-pill pending">🟢 DALAM PROSES / MENUNGGU</span>';
   if (isDone) statusBadge = '<span class="status-pill done">🏆 PERTANDINGAN SELESAI</span>';
 
-  // Laser attack beam effect
-  let laserHtml = '';
-  if (t1Win) {
-    laserHtml = `<div class="laser-attack laser-left-to-right"><div class="laser-bolt"></div></div>`;
-  } else if (t2Win) {
-    laserHtml = `<div class="laser-attack laser-right-to-left"><div class="laser-bolt"></div></div>`;
-  }
-
   // Score breakdown
   let scoresContent = '';
   if (m.format === 'BO3' && m.games) {
@@ -388,16 +380,15 @@ function openViewerMatchModal(matchId) {
   body.innerHTML = `
     <div style="text-align:center;margin-bottom:16px">${statusBadge}</div>
 
-    <!-- Arena Stage with VS Emblem & Laser Attack -->
+    <!-- Arena Stage with Maskot Emblems & VS Shield -->
     <div class="arena-stage">
-      ${laserHtml}
-
-      <!-- Team 1 Box -->
+      <!-- Team 1 Card -->
       <div class="arena-card ${t1Win ? 'winner' : t2Win ? 'defeated' : ''}">
+        ${t1Win ? '<div class="confetti-particles">✨ 🏆 ✨</div>' : ''}
         <div class="arena-emblem">${getInitials(t1)}</div>
         <span class="arena-seed">#${t1Seed}</span>
         <div class="arena-name">${esc(t1)}</div>
-        ${t1Win ? '<div class="victory-banner">🏆 VICTORY</div>' : ''}
+        ${t1Win ? '<div class="victory-banner">🏆 WINNER</div>' : ''}
       </div>
 
       <!-- VS Shield Emblem -->
@@ -405,12 +396,13 @@ function openViewerMatchModal(matchId) {
         <span>VS</span>
       </div>
 
-      <!-- Team 2 Box -->
+      <!-- Team 2 Card -->
       <div class="arena-card ${t2Win ? 'winner' : t1Win ? 'defeated' : ''}">
+        ${t2Win ? '<div class="confetti-particles">✨ 🏆 ✨</div>' : ''}
         <div class="arena-emblem">${getInitials(t2)}</div>
         <span class="arena-seed">#${t2Seed}</span>
         <div class="arena-name">${esc(t2)}</div>
-        ${t2Win ? '<div class="victory-banner">🏆 VICTORY</div>' : ''}
+        ${t2Win ? '<div class="victory-banner">🏆 WINNER</div>' : ''}
       </div>
     </div>
 
