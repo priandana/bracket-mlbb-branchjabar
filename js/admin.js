@@ -256,11 +256,11 @@ document.getElementById('btn-shuffle-matchups')?.addEventListener('click', () =>
   toast('Matchup berhasil diacak!', 'info');
 });
 
-// Reset matchups to standard seeding
+// Reset matchups to standard default seed order
 document.getElementById('btn-reset-matchups')?.addEventListener('click', () => {
   _customPairings = [];
-  renderMatchupBuilder();
-  toast('Matchup dikembalikan ke urutan standard', 'info');
+  renderMatchupBuilder(false);
+  toast('Matchup dikembalikan ke alur resmi yang paling ideal & seimbang! Klik Simpan & Generate untuk memperbarui.', 'success');
 });
 
 // Save tournament name + team names
