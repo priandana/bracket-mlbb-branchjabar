@@ -275,26 +275,31 @@ function drawConnectors(rounds, totalRounds) {
 
       const src1Slot = curSlots[ni * 2];
       const src2Slot = curSlots[ni * 2 + 1];
-      if (!src1Slot || !src2Slot) return;
+      if (!src1Slot && !src2Slot) return;
 
-      const src1Card = src1Slot.querySelector('.match-card');
-      const src2Card = src2Slot.querySelector('.match-card');
-      if (!src1Card || !src2Card) return;
+      const src1Card = src1Slot ? src1Slot.querySelector('.match-card') : null;
+      const src2Card = src2Slot ? src2Slot.querySelector('.match-card') : null;
 
-      const p1 = getCardCenter(src1Card);
-      const p2 = getCardCenter(src2Card);
-      const pN = getCardCenter(nextCard);
+      if (!src1Card && !src2Card) return;
 
-      const x1   = p1.right;
-      const y1   = p1.centerY;
-      const x2   = p2.right;
-      const y2   = p2.centerY;
+      const pN   = getCardCenter(nextCard);
       const xEnd = pN.left;
       const yEnd = pN.centerY;
-      const midX = x1 + (xEnd - x1) * 0.5;
 
-      addPath(svg, `M ${x1} ${y1} H ${midX} V ${yEnd} H ${xEnd}`);
-      addPath(svg, `M ${x2} ${y2} H ${midX} V ${yEnd}`);
+      if (src1Card && src2Card) {
+        const p1   = getCardCenter(src1Card);
+        const p2   = getCardCenter(src2Card);
+        const midX = p1.right + (xEnd - p1.right) * 0.5;
+
+        addPath(svg, `M ${p1.right} ${p1.centerY} H ${midX} V ${yEnd} H ${xEnd}`);
+        addPath(svg, `M ${p2.right} ${p2.centerY} H ${midX} V ${yEnd}`);
+      } else {
+        const realCard = src1Card || src2Card;
+        const p        = getCardCenter(realCard);
+        const midX     = p.right + (xEnd - p.right) * 0.5;
+
+        addPath(svg, `M ${p.right} ${p.centerY} H ${midX} V ${yEnd} H ${xEnd}`);
+      }
     });
   }
 }
