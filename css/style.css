@@ -37,7 +37,6 @@
   --card-w:      200px;
   --row-h:       36px;
   --slot-h:      90px;
-  --gap-col:     52px;
   --radius:      8px;
 
   --font: 'Inter', system-ui, sans-serif;
@@ -148,7 +147,8 @@ body {
   align-items: flex-start;
   gap: 0;
   position: relative;
-  padding-bottom: 20px;
+  padding-bottom: 40px;
+  padding-top: 0;
 }
 
 /* SVG connector canvas */
@@ -168,12 +168,24 @@ body {
   align-items: center;
   opacity: 0;
   animation: fadeSlide 0.4s ease forwards;
+  flex-shrink: 0;
 }
 .round-col:nth-child(1) { animation-delay: 0.05s; }
+.round-col:nth-child(2) { animation-delay: 0.05s; }
 .round-col:nth-child(3) { animation-delay: 0.1s; }
+.round-col:nth-child(4) { animation-delay: 0.1s; }
 .round-col:nth-child(5) { animation-delay: 0.15s; }
+.round-col:nth-child(6) { animation-delay: 0.15s; }
 .round-col:nth-child(7) { animation-delay: 0.2s; }
+.round-col:nth-child(8) { animation-delay: 0.2s; }
 .round-col:nth-child(9) { animation-delay: 0.25s; }
+
+/* Preliminary column — compact, no header */
+.prelim-col {
+  flex-shrink: 0;
+  opacity: 0;
+  animation: fadeSlide 0.4s ease 0.02s forwards;
+}
 @keyframes fadeSlide {
   from { opacity:0; transform: translateY(8px); }
   to   { opacity:1; transform: translateY(0); }
@@ -182,7 +194,8 @@ body {
 .round-header {
   width: var(--card-w);
   margin-bottom: 14px;
-  text-align: center;
+  text-align: left;
+  padding-left: 2px;
 }
 .round-label {
   font-size: 0.7rem;
@@ -214,6 +227,7 @@ body {
 .round-matches {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 /* Match slot wrapper */
@@ -221,12 +235,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-/* Spacer for bye slots */
-.bye-spacer {
-  width: var(--card-w);
-  /* height set inline */
+/* Column gap spacers */
+.connector-gap {
+  flex-shrink: 0;
 }
 
 /* =====================================================
