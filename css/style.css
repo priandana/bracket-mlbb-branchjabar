@@ -731,16 +731,178 @@ input[type="range"]::-webkit-slider-thumb {
 
 .divider { height: 1px; background: var(--border); margin: 18px 0; }
 
-/* Viewer Modal Teams Preview */
-.vm-teams-preview { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0; }
-.vm-team-box {
-  flex: 1; background: var(--surface-3); border: 1px solid var(--border);
-  border-radius: 10px; padding: 14px 10px; text-align: center; transition: all 0.2s;
+/* =====================================================
+   EPIC ANIMATED ARENA STAGE & LASER ATTACK MODAL
+   ===================================================== */
+.epic-modal {
+  max-width: 500px;
+  background: rgba(22, 25, 34, 0.95);
+  border: 1.5px solid var(--border-md);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 30px var(--cyan-glow);
 }
-.vm-team-box.winner { border-color: var(--green); background: rgba(16,185,129,0.18); box-shadow: 0 0 12px var(--green-glow); }
-.vm-seed { display: block; font-size: 0.75rem; font-weight: 700; color: var(--cyan); margin-bottom: 2px; }
-.vm-name { font-size: 0.95rem; font-weight: 800; color: #FFF; }
-.vm-vs { font-size: 0.75rem; font-weight: 800; color: var(--text-4); }
+
+.arena-stage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 0;
+  position: relative;
+  padding: 10px 0;
+}
+
+/* VS Shield Emblem */
+.arena-vs-shield {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #1E2028, #0F172A);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 0 14px var(--gold-glow);
+  z-index: 10;
+  flex-shrink: 0;
+  animation: vsPulse 2s ease-in-out infinite;
+}
+@keyframes vsPulse {
+  0%,100%{ transform: scale(1); box-shadow: 0 0 14px var(--gold-glow); }
+  50%{ transform: scale(1.1); box-shadow: 0 0 24px var(--gold-glow); }
+}
+
+/* Team Arena Cards */
+.arena-card {
+  flex: 1;
+  background: var(--surface-3);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 12px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.arena-emblem {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #333745, #1E2028);
+  border: 2px solid var(--border-md);
+  color: var(--cyan);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+}
+
+.arena-seed {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--cyan);
+  margin-bottom: 2px;
+}
+
+.arena-name {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Winner Card Styling */
+.arena-card.winner {
+  border-color: var(--green);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.08));
+  box-shadow: 0 0 24px var(--green-glow);
+  transform: scale(1.05);
+}
+.arena-card.winner .arena-emblem {
+  background: linear-gradient(135deg, var(--green), #059669);
+  color: #FFFFFF;
+  border-color: var(--green);
+  box-shadow: 0 0 14px var(--green-glow);
+}
+
+.victory-banner {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #FFFFFF;
+  background: var(--green);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 8px;
+  display: inline-block;
+  box-shadow: 0 0 10px var(--green-glow);
+  animation: bounceBanner 1s infinite alternate;
+}
+@keyframes bounceBanner {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
+}
+
+/* Defeated Card Styling */
+.arena-card.defeated {
+  opacity: 0.45;
+  filter: grayscale(60%);
+  animation: shakeDefeated 0.4s ease;
+}
+@keyframes shakeDefeated {
+  0%,100%{ transform: translateX(0); }
+  20%,60%{ transform: translateX(-4px); }
+  40%,80%{ transform: translateX(4px); }
+}
+
+/* LASER ATTACK BEAM ANIMATION */
+.laser-attack {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.laser-left-to-right {
+  left: 20%;
+  right: 20%;
+  background: linear-gradient(90deg, var(--green), var(--cyan), transparent);
+  box-shadow: 0 0 14px var(--green), 0 0 24px var(--cyan);
+  animation: laserSweepLeft 0.8s ease-out forwards;
+}
+
+.laser-right-to-left {
+  left: 20%;
+  right: 20%;
+  background: linear-gradient(-90deg, var(--green), var(--cyan), transparent);
+  box-shadow: 0 0 14px var(--green), 0 0 24px var(--cyan);
+  animation: laserSweepRight 0.8s ease-out forwards;
+}
+
+@keyframes laserSweepLeft {
+  0% { width: 0%; left: 20%; opacity: 1; }
+  70% { width: 60%; opacity: 1; }
+  100% { width: 60%; left: 50%; opacity: 0; }
+}
+@keyframes laserSweepRight {
+  0% { width: 0%; right: 20%; opacity: 1; }
+  70% { width: 60%; opacity: 1; }
+  100% { width: 60%; right: 50%; opacity: 0; }
+}
+
+.win-text {
+  color: var(--green) !important;
+  font-weight: 800 !important;
+}
+
 
 .bo3-map-summary { background: var(--surface-3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-top: 12px; }
 .map-sum-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; padding: 6px 0; border-bottom: 1px solid var(--border); }

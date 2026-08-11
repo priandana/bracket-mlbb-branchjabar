@@ -1,6 +1,6 @@
 // =====================================================
 // BRACKET VIEWER — app.js
-// Symmetrical layout, Zoom & Pan, Match Detail Modal
+// Symmetrical layout, Zoom & Pan, Epic Animated Match Modal
 // =====================================================
 
 const SLOT_H = 90; // base slot height per match in Round 1 (px)
@@ -39,7 +39,6 @@ function showEmpty() {
       <span class="emoji">⚔️</span>
       <h2>Bracket Belum Tersedia</h2>
       <p>Administrator sedang mempersiapkan turnamen. Bracket akan muncul di sini setelah dibuat.</p>
-      <a href="admin.html" class="btn btn-primary">Buka Panel Admin</a>
     </div>`;
 }
 
@@ -154,7 +153,6 @@ function renderMatchCard(m) {
   if (isDone)                  cardCls += ' done';
   else if (m.team1 || m.team2) cardCls += ' active';
 
-  // Map dots (BO3)
   let mapDots = '';
   if (m.format === 'BO3') {
     mapDots = '<div class="map-scores">';
@@ -201,12 +199,14 @@ function teamRow(team, teamId, score, isWin, isLose) {
 
 function getTeamAvatarHTML(name) {
   if (!name || name === 'TBD' || name === 'BYE') return '';
+  return `<div class="team-avatar">${getInitials(name)}</div>`;
+}
+
+function getInitials(name) {
+  if (!name || name === 'TBD') return '?';
   const parts = name.trim().split(/\s+/);
-  let initials = name.substring(0, 2).toUpperCase();
-  if (parts.length >= 2) {
-    initials = (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return `<div class="team-avatar">${initials}</div>`;
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
 }
 
 // ── SVG Connectors ────────────────────────────────────
@@ -227,7 +227,6 @@ function drawConnectors(rounds, totalRounds) {
 
   const getCardCenter = (cardEl) => {
     const cRect = cardEl.getBoundingClientRect();
-    // Divide by zoom level so coordinates match native wrap space
     const zoom = _zoomLevel || 1.0;
     return {
       left:    (cRect.left - wRect.left) / zoom,
@@ -273,7 +272,7 @@ function drawConnectors(rounds, totalRounds) {
 function addPath(svg, d) {
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
-  p.setAttribute('stroke', '#FFFFFF'); // crisp white Challonge connector line
+  p.setAttribute('stroke', '#FFFFFF');
   p.setAttribute('stroke-width', '1.8');
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke-linecap', 'square');
@@ -312,7 +311,6 @@ function applyZoom() {
   if (levelText) {
     levelText.textContent = `${Math.round(_zoomLevel * 100)}%`;
   }
-  // Redraw connectors on zoom
   if (_meta.totalRounds) {
     const rounds = {};
     for (const id in _matches) {
@@ -324,7 +322,7 @@ function applyZoom() {
   }
 }
 
-// ── VIEWER MATCH DETAIL MODAL ─────────────────────────
+// ── EPIC ANIMATED MATCH DETAIL MODAL ─────────────────
 function attachCardClickHandlers() {
   document.querySelectorAll('.match-card.clickable').forEach(card => {
     card.addEventListener('click', () => {
@@ -343,24 +341,35 @@ function openViewerMatchModal(matchId) {
   const t1Seed = m.team1 ? (_teams[m.team1]?.seed || '') : '';
   const t2Seed = m.team2 ? (_teams[m.team2]?.seed || '') : '';
 
+  const isDone = m.status === 'done';
+  const t1Win  = isDone && m.winner === m.team1;
+  const t2Win  = isDone && m.winner === m.team2;
+
   document.getElementById('vm-title').textContent = m.roundName;
   document.getElementById('vm-format').textContent = m.format;
 
   const body = document.getElementById('vm-body');
 
-  let statusBadge = '<span class="status-pill pending">🟢 Dalam Proses / Menunggu</span>';
-  if (m.status === 'done') statusBadge = '<span class="status-pill done">🏆 Selesai</span>';
+  let statusBadge = '<span class="status-pill pending">🟢 DALAM PROSES / MENUNGGU</span>';
+  if (isDone) statusBadge = '<span class="status-pill done">🏆 PERTANDINGAN SELESAI</span>';
 
+  // Laser attack beam effect
+  let laserHtml = '';
+  if (t1Win) {
+    laserHtml = `<div class="laser-attack laser-left-to-right"><div class="laser-bolt"></div></div>`;
+  } else if (t2Win) {
+    laserHtml = `<div class="laser-attack laser-right-to-left"><div class="laser-bolt"></div></div>`;
+  }
+
+  // Score breakdown
   let scoresContent = '';
   if (m.format === 'BO3' && m.games) {
     const { t1wins, t2wins, winner } = calcBO3(m.games, m.team1, m.team2);
     scoresContent = `
       <div class="score-tally">
-        <span class="tally-team">${esc(t1)} ${winner === m.team1 ? '👑' : ''}</span>
-        <span class="tally-score">${t1wins}</span>
-        <span class="tally-dash">-</span>
-        <span class="tally-score">${t2wins}</span>
-        <span class="tally-team">${winner === m.team2 ? '👑' : ''} ${esc(t2)}</span>
+        <div class="tally-team ${winner === m.team1 ? 'win-text' : ''}">${esc(t1)} ${winner === m.team1 ? '👑' : ''}</div>
+        <div class="tally-score">${t1wins} - ${t2wins}</div>
+        <div class="tally-team ${winner === m.team2 ? 'win-text' : ''}">${winner === m.team2 ? '👑' : ''} ${esc(t2)}</div>
       </div>
       <div class="bo3-map-summary">
         <div class="map-sum-row"><span>Map 1:</span> <strong>${getGameWinnerName(m.games.g1, m)}</strong></div>
@@ -368,31 +377,43 @@ function openViewerMatchModal(matchId) {
         <div class="map-sum-row"><span>Map 3:</span> <strong>${getGameWinnerName(m.games.g3, m)}</strong></div>
       </div>`;
   } else {
-    const t1Win = m.winner === m.team1;
-    const t2Win = m.winner === m.team2;
     scoresContent = `
       <div class="score-tally">
-        <span class="tally-team">${esc(t1)} ${t1Win ? '👑' : ''}</span>
-        <span class="tally-score">${t1Win ? '1' : '0'}</span>
-        <span class="tally-dash">-</span>
-        <span class="tally-score">${t2Win ? '1' : '0'}</span>
-        <span class="tally-team">${t2Win ? '👑' : ''} ${esc(t2)}</span>
+        <div class="tally-team ${t1Win ? 'win-text' : ''}">${esc(t1)} ${t1Win ? '👑' : ''}</div>
+        <div class="tally-score">${t1Win ? '1' : t2Win ? '0' : '0'} - ${t2Win ? '1' : t1Win ? '0' : '0'}</div>
+        <div class="tally-team ${t2Win ? 'win-text' : ''}">${t2Win ? '👑' : ''} ${esc(t2)}</div>
       </div>`;
   }
 
   body.innerHTML = `
-    <div style="text-align:center;margin-bottom:14px">${statusBadge}</div>
-    <div class="vm-teams-preview">
-      <div class="vm-team-box ${m.winner === m.team1 ? 'winner' : ''}">
-        <span class="vm-seed">#${t1Seed}</span>
-        <span class="vm-name">${esc(t1)}</span>
+    <div style="text-align:center;margin-bottom:16px">${statusBadge}</div>
+
+    <!-- Arena Stage with VS Emblem & Laser Attack -->
+    <div class="arena-stage">
+      ${laserHtml}
+
+      <!-- Team 1 Box -->
+      <div class="arena-card ${t1Win ? 'winner' : t2Win ? 'defeated' : ''}">
+        <div class="arena-emblem">${getInitials(t1)}</div>
+        <span class="arena-seed">#${t1Seed}</span>
+        <div class="arena-name">${esc(t1)}</div>
+        ${t1Win ? '<div class="victory-banner">🏆 VICTORY</div>' : ''}
       </div>
-      <span class="vm-vs">VS</span>
-      <div class="vm-team-box ${m.winner === m.team2 ? 'winner' : ''}">
-        <span class="vm-seed">#${t2Seed}</span>
-        <span class="vm-name">${esc(t2)}</span>
+
+      <!-- VS Shield Emblem -->
+      <div class="arena-vs-shield">
+        <span>VS</span>
+      </div>
+
+      <!-- Team 2 Box -->
+      <div class="arena-card ${t2Win ? 'winner' : t1Win ? 'defeated' : ''}">
+        <div class="arena-emblem">${getInitials(t2)}</div>
+        <span class="arena-seed">#${t2Seed}</span>
+        <div class="arena-name">${esc(t2)}</div>
+        ${t2Win ? '<div class="victory-banner">🏆 VICTORY</div>' : ''}
       </div>
     </div>
+
     ${scoresContent}
   `;
 
@@ -400,9 +421,9 @@ function openViewerMatchModal(matchId) {
 }
 
 function getGameWinnerName(gameWinnerId, matchObj) {
-  if (!gameWinnerId) return '<span style="color:var(--text-3)">Belum Dimainkan</span>';
-  if (gameWinnerId === matchObj.team1) return `<span style="color:var(--green)">${esc(_teams[matchObj.team1]?.name)}</span>`;
-  if (gameWinnerId === matchObj.team2) return `<span style="color:var(--green)">${esc(_teams[matchObj.team2]?.name)}</span>`;
+  if (!gameWinnerId) return '<span style="color:var(--text-4)">Belum Dimainkan</span>';
+  if (gameWinnerId === matchObj.team1) return `<span style="color:var(--green);font-weight:700">${esc(_teams[matchObj.team1]?.name)}</span>`;
+  if (gameWinnerId === matchObj.team2) return `<span style="color:var(--green);font-weight:700">${esc(_teams[matchObj.team2]?.name)}</span>`;
   return 'Belum Dimainkan';
 }
 
