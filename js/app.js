@@ -12,35 +12,56 @@ let _zoomLevel = 1.0;
 
 // ── Init ─────────────────────────────────────────────
 function initViewer() {
+  // Safety timeout: hide spinner if data takes > 4 seconds or is empty
+  setTimeout(hideLoadingSpinner, 4000);
+
   db.ref(`${ROOT}/settings`).on('value', snap => {
     const s = snap.val();
     if (!s) { showEmpty(); return; }
     const name = s.name || 'ML Tournament';
     document.getElementById('tournament-name').textContent = name;
     document.title = name + ' — Bracket';
-    if (s.status === 'setup' || !s.totalRounds) { showEmpty(); return; }
+
+    if (s.status === 'setup' || !s.totalRounds) {
+      showEmpty();
+      return;
+    }
+
     _meta = { totalRounds: s.totalRounds, bracketSize: s.bracketSize };
     tryRender();
   });
-  db.ref(`${ROOT}/teams`).on('value',   snap => { _teams   = snap.val() || {}; tryRender(); });
-  db.ref(`${ROOT}/matches`).on('value', snap => { _matches = snap.val() || {}; tryRender(); });
+
+  db.ref(`${ROOT}/teams`).on('value', snap => {
+    _teams = snap.val() || {};
+    tryRender();
+  });
+
+  db.ref(`${ROOT}/matches`).on('value', snap => {
+    _matches = snap.val() || {};
+    tryRender();
+  });
 
   setupZoomControls();
 }
 
-function tryRender() {
-  if (!_meta.totalRounds || !Object.keys(_matches).length) return;
+function hideLoadingSpinner() {
   const loading = document.getElementById('loading-state');
   if (loading) loading.style.display = 'none';
+}
+
+function tryRender() {
+  if (!_meta.totalRounds || !Object.keys(_matches).length) return;
+  hideLoadingSpinner();
   renderBracket();
 }
 
 function showEmpty() {
+  hideLoadingSpinner();
   document.getElementById('bracket-root').innerHTML = `
     <div class="empty-state">
       <span class="emoji">⚔️</span>
       <h2>Bracket Belum Tersedia</h2>
-      <p>Administrator sedang mempersiapkan turnamen. Bracket akan muncul di sini setelah dibuat.</p>
+      <p>Administrator sedang mempersiapkan turnamen. Bracket akan muncul di sini setelah dibuat dari Panel Admin.</p>
     </div>`;
 }
 
@@ -225,7 +246,6 @@ function drawConnectors(rounds, totalRounds) {
   svg.setAttribute('viewBox', `0 0 ${wW} ${wH}`);
   svg.innerHTML = '';
 
-  // Helper to get untransformed card center relative to wrap container
   const getCardCenter = (cardEl) => {
     let top = 0;
     let left = 0;
@@ -309,7 +329,7 @@ function setupZoomControls() {
       const availW = outer.clientWidth - 64;
       const wrapW  = wrap.scrollWidth || 900;
       const fitScale = Math.min(1.1, Math.max(0.8, availW / wrapW));
-      _zoomLevel = Math.round(fitScale * 20) / 20; // round to nearest 0.05
+      _zoomLevel = Math.round(fitScale * 20) / 20;
     } else {
       _zoomLevel = 1.0;
     }
@@ -369,7 +389,6 @@ function openViewerMatchModal(matchId) {
   let statusBadge = '<span class="status-pill pending">🟢 DALAM PROSES / MENUNGGU</span>';
   if (isDone) statusBadge = '<span class="status-pill done">🏆 PERTANDINGAN SELESAI</span>';
 
-  // Score breakdown
   let scoresContent = '';
   if (m.format === 'BO3' && m.games) {
     const { t1wins, t2wins, winner } = calcBO3(m.games, m.team1, m.team2);
@@ -396,9 +415,7 @@ function openViewerMatchModal(matchId) {
   body.innerHTML = `
     <div style="text-align:center;margin-bottom:16px">${statusBadge}</div>
 
-    <!-- Arena Stage with Maskot Emblems & VS Shield -->
     <div class="arena-stage">
-      <!-- Team 1 Card -->
       <div class="arena-card ${t1Win ? 'winner' : t2Win ? 'defeated' : ''}">
         ${t1Win ? '<div class="confetti-particles">✨ 🏆 ✨</div>' : ''}
         <div class="arena-emblem">${getInitials(t1)}</div>
@@ -407,12 +424,10 @@ function openViewerMatchModal(matchId) {
         ${t1Win ? '<div class="victory-banner">🏆 WINNER</div>' : ''}
       </div>
 
-      <!-- VS Shield Emblem -->
       <div class="arena-vs-shield">
         <span>VS</span>
       </div>
 
-      <!-- Team 2 Card -->
       <div class="arena-card ${t2Win ? 'winner' : t1Win ? 'defeated' : ''}">
         ${t2Win ? '<div class="confetti-particles">✨ 🏆 ✨</div>' : ''}
         <div class="arena-emblem">${getInitials(t2)}</div>
