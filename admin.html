@@ -3,16 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel — ML Tournament Bracket</title>
+  <title>Admin — ML Tournament Bracket</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body class="admin-body">
-
-  <!-- Background FX -->
-  <div class="bg-fx" aria-hidden="true">
-    <div class="bg-orb bg-orb-1"></div>
-    <div class="bg-orb bg-orb-2"></div>
-  </div>
+<body style="background:var(--bg)">
 
   <!-- ================================================
        LOGIN SCREEN
@@ -20,167 +14,141 @@
   <section class="login-screen" id="login-screen">
     <div class="login-card">
       <div class="login-logo">
-        <span class="login-lock">🔐</span>
+        <span class="icon">🔐</span>
         <div class="title">ML Tournament</div>
         <div class="sub">Panel Administrator</div>
+      </div>
+
+      <div class="login-hint">
+        Default password: <strong>admin123</strong>
       </div>
 
       <div class="alert alert-error" id="login-error"></div>
 
       <form id="login-form">
         <div class="form-group">
-          <label class="form-label" for="login-pw">Password Admin</label>
-          <input
-            type="password"
-            id="login-pw"
-            class="form-input"
-            placeholder="Masukkan password..."
-            autocomplete="current-password"
-            required
-          />
+          <label class="form-label" for="login-pw">Password</label>
+          <input type="password" id="login-pw" class="form-input"
+            placeholder="Masukkan password..." autocomplete="current-password" required />
         </div>
-        <button type="submit" class="btn btn-primary btn-full" id="login-btn">
-          🔓 Masuk
-        </button>
+        <button type="submit" class="btn btn-primary btn-full">Masuk →</button>
       </form>
 
-      <div class="login-divider"></div>
-      <p style="color:var(--text-700);font-size:.75rem;text-align:center">
-        Default password: <code style="color:var(--gold-500)">admin123</code><br>
-        Ganti setelah masuk pertama kali.
-      </p>
-
-      <div style="text-align:center;margin-top:16px">
-        <a href="index.html" class="btn btn-ghost btn-sm">👁️ Lihat Bracket</a>
+      <div class="divider"></div>
+      <div style="text-align:center">
+        <a href="index.html" class="btn btn-secondary btn-sm">👁️ Lihat Bracket</a>
       </div>
     </div>
   </section>
 
   <!-- ================================================
-       ADMIN LAYOUT (shown after login)
+       ADMIN LAYOUT
        ================================================ -->
   <div class="admin-layout" id="admin-layout">
 
-    <!-- Sidebar -->
-    <nav class="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-title">ML Bracket</div>
-        <div class="brand-sub">Admin Panel</div>
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="admin-topbar-brand">
+        <div class="icon">⚔️</div>
+        ML Bracket Admin
       </div>
 
-      <div class="nav-item active" data-tab="setup">
-        <span class="nav-icon">⚙️</span>
-        <span>Setup Turnamen</span>
-      </div>
-      <div class="nav-item" data-tab="matches">
-        <span class="nav-icon">⚔️</span>
-        <span>Kelola Match</span>
-      </div>
-      <div class="nav-item" data-tab="settings">
-        <span class="nav-icon">🔧</span>
-        <span>Pengaturan</span>
-      </div>
+      <!-- Tabs -->
+      <nav class="admin-tabs">
+        <button class="tab-btn active" data-tab="setup">
+          <span class="tab-icon">⚙️</span> Setup
+        </button>
+        <button class="tab-btn" data-tab="matches">
+          <span class="tab-icon">⚔️</span> Match
+        </button>
+        <button class="tab-btn" data-tab="settings">
+          <span class="tab-icon">🔧</span> Pengaturan
+        </button>
+      </nav>
 
-      <div class="sidebar-footer">
-        <button class="btn btn-ghost btn-sm btn-full" id="logout-btn">🚪 Keluar</button>
-        <div style="margin-top:10px;text-align:center">
-          <a href="index.html" class="btn btn-ghost btn-sm" target="_blank">👁️ Lihat Bracket</a>
-        </div>
+      <div class="admin-topbar-actions">
+        <a href="index.html" target="_blank" class="btn btn-secondary btn-sm">👁️ Lihat Bracket</a>
+        <button class="btn btn-secondary btn-sm" id="logout-btn">Keluar</button>
       </div>
-    </nav>
+    </header>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <main class="admin-main">
 
-      <!-- ============================================
-           TAB: SETUP
-           ============================================ -->
+      <!-- ── TAB: SETUP ── -->
       <section class="admin-section active" id="section-setup">
         <div class="section-head">
           <h1 class="section-title">Setup Turnamen</h1>
-          <p class="section-desc">Atur nama, jumlah tim, dan buat bracket turnamen.</p>
+          <p class="section-desc">Atur nama turnamen, jumlah tim, dan generate bracket.</p>
         </div>
 
-        <!-- Tournament Info -->
+        <!-- Info turnamen -->
         <div class="panel">
-          <div class="panel-title">🏆 Informasi Turnamen</div>
+          <div class="panel-title">Informasi Turnamen</div>
           <div class="form-group">
             <label class="form-label" for="setup-name">Nama Turnamen</label>
-            <input
-              type="text"
-              id="setup-name"
-              class="form-input"
-              placeholder="Contoh: ML Regional Championship 2025"
-              maxlength="60"
-            />
+            <input type="text" id="setup-name" class="form-input"
+              placeholder="Contoh: ML Regional Jabar 2025" maxlength="60" />
           </div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <div id="setup-status" class="status-pill bye">⚙️ Setup</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:.78rem;color:var(--text-3)">Status:</span>
+            <span id="setup-status" class="status-pill bye">⚙️ Setup</span>
           </div>
         </div>
 
-        <!-- Team Count -->
+        <!-- Jumlah tim -->
         <div class="panel">
-          <div class="panel-title">👥 Jumlah Tim</div>
+          <div class="panel-title">Jumlah Tim</div>
           <div class="range-row">
-            <span style="color:var(--text-500);font-size:.85rem">Jumlah Tim:</span>
+            <span class="range-label">Jumlah Tim:</span>
             <span class="range-val" id="num-teams-val">8</span>
           </div>
           <input type="range" id="num-teams-slider" min="2" max="32" value="8" step="1" />
-          <p style="color:var(--text-700);font-size:.75rem;margin-top:10px">
-            💡 Sistem bracket akan menyesuaikan otomatis (byes untuk jumlah non-pangkat-2)
+          <p style="font-size:.75rem;color:var(--text-3);margin-top:8px">
+            💡 Bracket otomatis menyesuaikan (byes untuk jumlah non-pangkat 2)
           </p>
         </div>
 
-        <!-- Team Names -->
+        <!-- Nama tim -->
         <div class="panel">
-          <div class="panel-title">📋 Nama Tim</div>
-          <div class="team-inputs" id="team-inputs-grid">
-            <!-- Populated by JS -->
-          </div>
+          <div class="panel-title">Nama Tim</div>
+          <div class="team-inputs" id="team-inputs-grid"></div>
         </div>
 
         <!-- Actions -->
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn btn-ghost" id="save-setup-btn">💾 Simpan Pengaturan</button>
-          <button class="btn btn-primary" id="generate-bracket-btn">
-            ⚡ Generate Bracket
-          </button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-secondary" id="save-setup-btn">💾 Simpan</button>
+          <button class="btn btn-primary" id="generate-bracket-btn">⚡ Generate Bracket</button>
         </div>
-        <p style="color:var(--text-700);font-size:.75rem;margin-top:12px">
-          ⚠️ Generate Bracket akan menghapus semua data pertandingan yang ada. Gunakan hanya di awal turnamen.
+        <p style="font-size:.75rem;color:var(--text-3);margin-top:10px">
+          ⚠️ Generate Bracket akan menghapus semua data pertandingan. Gunakan hanya di awal turnamen.
         </p>
       </section>
 
-      <!-- ============================================
-           TAB: MATCHES
-           ============================================ -->
+      <!-- ── TAB: MATCHES ── -->
       <section class="admin-section" id="section-matches">
         <div class="section-head">
-          <h1 class="section-title">Kelola Match</h1>
+          <h1 class="section-title">Kelola Pertandingan</h1>
           <p class="section-desc">Klik pertandingan untuk memasukkan hasil skor.</p>
         </div>
 
         <div class="panel">
-          <div class="panel-title">⚔️ Daftar Pertandingan</div>
+          <div class="panel-title">Daftar Pertandingan</div>
           <div class="matches-list" id="matches-list">
-            <p style="color:var(--text-700);font-size:.85rem">Memuat data...</p>
+            <p style="font-size:.85rem;color:var(--text-3)">Memuat...</p>
           </div>
         </div>
       </section>
 
-      <!-- ============================================
-           TAB: SETTINGS
-           ============================================ -->
+      <!-- ── TAB: SETTINGS ── -->
       <section class="admin-section" id="section-settings">
         <div class="section-head">
           <h1 class="section-title">Pengaturan</h1>
-          <p class="section-desc">Keamanan dan manajemen data turnamen.</p>
+          <p class="section-desc">Keamanan dan manajemen data.</p>
         </div>
 
-        <!-- Change Password -->
         <div class="panel">
-          <div class="panel-title">🔑 Ganti Password Admin</div>
+          <div class="panel-title">Ganti Password Admin</div>
           <form id="change-pw-form">
             <div class="form-group">
               <label class="form-label" for="old-pw">Password Lama</label>
@@ -188,60 +156,63 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="new-pw">Password Baru</label>
-              <input type="password" id="new-pw" class="form-input" placeholder="Password baru (min. 4 karakter)..." required />
+              <input type="password" id="new-pw" class="form-input" placeholder="Minimal 4 karakter..." required />
             </div>
             <div class="form-group">
               <label class="form-label" for="new-pw2">Konfirmasi Password Baru</label>
               <input type="password" id="new-pw2" class="form-input" placeholder="Ulangi password baru..." required />
             </div>
             <div class="alert alert-error" id="pw-error"></div>
-            <button type="submit" class="btn btn-primary">🔐 Simpan Password</button>
+            <button type="submit" class="btn btn-primary">Simpan Password</button>
           </form>
         </div>
 
-        <!-- Danger Zone -->
         <div class="panel danger-zone">
-          <div class="panel-title">⚠️ Danger Zone</div>
-          <p style="color:var(--text-500);font-size:.85rem;margin-bottom:16px">
-            Reset bracket akan menghapus semua data pertandingan. Data tim dan nama turnamen tetap tersimpan.
+          <div class="panel-title">Danger Zone</div>
+          <p style="font-size:.84rem;color:var(--text-2);margin-bottom:14px">
+            Reset bracket menghapus semua data pertandingan. Data tim tetap tersimpan.
           </p>
-          <button class="btn btn-danger" id="reset-bracket-btn">
-            🗑️ Reset Bracket
-          </button>
+          <button class="btn btn-danger" id="reset-bracket-btn">🗑️ Reset Bracket</button>
         </div>
       </section>
 
     </main>
   </div>
 
-  <!-- ================================================
-       MATCH MODAL
-       ================================================ -->
+  <!-- ── MATCH MODAL ── -->
   <div class="modal-overlay" id="match-modal" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modal-head">
         <div>
           <div class="modal-title" id="modal-match-title">Pertandingan</div>
-          <div style="color:var(--text-700);font-size:.75rem;margin-top:3px">
-            Format: <span id="modal-match-format" style="color:var(--gold-500)">BO1</span>
-          </div>
+          <div class="modal-sub">Format: <span id="modal-match-format">BO1</span></div>
         </div>
         <button class="modal-close" id="modal-close-btn" aria-label="Tutup">✕</button>
       </div>
-
-      <!-- Body dynamically filled -->
       <div id="modal-body"></div>
     </div>
   </div>
 
-  <!-- Firebase SDK (compat) -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-
-  <!-- App Scripts -->
   <script src="js/firebase-config.js"></script>
   <script src="js/bracket.js"></script>
   <script src="js/admin.js"></script>
-
+  <!-- Override nav-item → tab-btn for admin.js compatibility -->
+  <script>
+    // Map tab-btn clicks to admin.js tab system
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        const section = document.getElementById(`section-${tab}`);
+        if (section) section.classList.add('active');
+        if (tab === 'matches') loadMatchesTab();
+      });
+    });
+  </script>
 </body>
 </html>

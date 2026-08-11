@@ -78,17 +78,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   loadMatchesTab();
 });
 
-// ── Navigation ────────────────────────────────────────
-document.querySelectorAll('.nav-item').forEach(el => {
-  el.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-    el.classList.add('active');
-    const target = el.dataset.tab;
-    document.getElementById(`section-${target}`)?.classList.add('active');
-    if (target === 'matches') loadMatchesTab();
-  });
-});
+// ── Navigation (handled by inline script in admin.html) ──
 
 // ── Firebase Listeners ────────────────────────────────
 function initAdminListeners() {
