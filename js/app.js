@@ -30,6 +30,8 @@ function initViewer() {
 
 function tryRender() {
   if (!_meta.totalRounds || !Object.keys(_matches).length) return;
+  const loading = document.getElementById('loading-state');
+  if (loading) loading.style.display = 'none';
   renderBracket();
 }
 
