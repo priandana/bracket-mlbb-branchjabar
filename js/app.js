@@ -189,12 +189,24 @@ function teamRow(team, teamId, score, isWin, isLose) {
   if (isLose) cls += ' loser';
   const scoreBadge = score !== ''
     ? `<div class="team-score">${score}</div>` : '';
+  const avatarHtml = getTeamAvatarHTML(name);
   return `
     <div class="${cls}">
       <span class="team-seed">${seed}</span>
+      ${avatarHtml}
       <span class="team-name">${name}</span>
       ${scoreBadge}
     </div>`;
+}
+
+function getTeamAvatarHTML(name) {
+  if (!name || name === 'TBD' || name === 'BYE') return '';
+  const parts = name.trim().split(/\s+/);
+  let initials = name.substring(0, 2).toUpperCase();
+  if (parts.length >= 2) {
+    initials = (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return `<div class="team-avatar">${initials}</div>`;
 }
 
 // ── SVG Connectors ────────────────────────────────────
