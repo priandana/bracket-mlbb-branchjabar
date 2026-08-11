@@ -143,12 +143,20 @@ body {
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
 /* =====================================================
-   BRACKET OUTER & CONTAINER
+   BRACKET OUTER & CONTAINER (Centered & Clean)
    ===================================================== */
 .bracket-outer {
   padding: 28px 36px 60px;
   overflow-x: auto;
   min-height: calc(100vh - 60px);
+  display: flex;
+  justify-content: center;
+}
+
+#bracket-root {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .bracket-wrap {
@@ -158,7 +166,8 @@ body {
   position: relative;
   padding-bottom: 40px;
   padding-top: 0;
-  transition: transform 0.15s ease-out;
+  transition: transform 0.18s ease-out;
+  margin: 0 auto;
 }
 
 /* SVG connector canvas */

@@ -282,21 +282,30 @@ function addPath(svg, d) {
 // ── ZOOM CONTROLS ─────────────────────────────────────
 function setupZoomControls() {
   document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
-    if (_zoomLevel < 1.8) {
+    if (_zoomLevel < 1.6) {
       _zoomLevel += 0.15;
       applyZoom();
     }
   });
 
   document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
-    if (_zoomLevel > 0.55) {
+    if (_zoomLevel > 0.75) {
       _zoomLevel -= 0.15;
       applyZoom();
     }
   });
 
   document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
-    _zoomLevel = 1.0;
+    const wrap = document.getElementById('bracket-wrap');
+    const outer = document.getElementById('bracket-outer');
+    if (wrap && outer) {
+      const availW = outer.clientWidth - 64;
+      const wrapW  = wrap.scrollWidth || 900;
+      const fitScale = Math.min(1.1, Math.max(0.8, availW / wrapW));
+      _zoomLevel = Math.round(fitScale * 20) / 20; // round to nearest 0.05
+    } else {
+      _zoomLevel = 1.0;
+    }
     applyZoom();
   });
 }
@@ -306,7 +315,7 @@ function applyZoom() {
   const levelText = document.getElementById('zoom-level-text');
   if (wrap) {
     wrap.style.transform = `scale(${_zoomLevel})`;
-    wrap.style.transformOrigin = 'top left';
+    wrap.style.transformOrigin = 'top center';
   }
   if (levelText) {
     levelText.textContent = `${Math.round(_zoomLevel * 100)}%`;
