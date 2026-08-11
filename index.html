@@ -27,14 +27,36 @@
     </div>
   </header>
 
-  <!-- Bracket -->
-  <main class="bracket-outer">
+  <!-- Zoom Controls Toolbar -->
+  <div class="zoom-toolbar">
+    <button class="zoom-btn" id="zoom-in-btn" title="Zoom In">+</button>
+    <span class="zoom-level-text" id="zoom-level-text">100%</span>
+    <button class="zoom-btn" id="zoom-out-btn" title="Zoom Out">−</button>
+    <button class="zoom-btn reset" id="zoom-reset-btn" title="Reset Zoom">🔄 Fit</button>
+  </div>
+
+  <!-- Bracket Area -->
+  <main class="bracket-outer" id="bracket-outer">
     <div class="loading-state" id="loading-state">
       <div class="loading-ring"></div>
       <div class="loading-text">Memuat bracket...</div>
     </div>
     <div id="bracket-root" style="position:relative;"></div>
   </main>
+
+  <!-- Detail Match Modal (For Viewers) -->
+  <div class="modal-overlay" id="viewer-match-modal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="vm-title">Detail Pertandingan</div>
+          <div class="modal-sub">Format: <span id="vm-format" style="color:var(--blue);font-weight:700">BO1</span></div>
+        </div>
+        <button class="modal-close" id="vm-close-btn" aria-label="Tutup">✕</button>
+      </div>
+      <div id="vm-body"></div>
+    </div>
+  </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>

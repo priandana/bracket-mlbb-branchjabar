@@ -1,5 +1,6 @@
 // =====================================================
-// BRACKET VIEWER — app.js (Perfect Symmetrical Layout)
+// BRACKET VIEWER — app.js
+// Symmetrical layout, Zoom & Pan, Match Detail Modal
 // =====================================================
 
 const SLOT_H = 90; // base slot height per match in Round 1 (px)
@@ -7,6 +8,7 @@ const SLOT_H = 90; // base slot height per match in Round 1 (px)
 let _teams   = {};
 let _matches = {};
 let _meta    = {};
+let _zoomLevel = 1.0;
 
 // ── Init ─────────────────────────────────────────────
 function initViewer() {
@@ -22,6 +24,8 @@ function initViewer() {
   });
   db.ref(`${ROOT}/teams`).on('value',   snap => { _teams   = snap.val() || {}; tryRender(); });
   db.ref(`${ROOT}/matches`).on('value', snap => { _matches = snap.val() || {}; tryRender(); });
+
+  setupZoomControls();
 }
 
 function tryRender() {
@@ -42,10 +46,6 @@ function showEmpty() {
 // ── Main Render ───────────────────────────────────────
 function renderBracket() {
   const { totalRounds, bracketSize } = _meta;
-
-  // Total height for round container: (bracketSize / 2) * SLOT_H
-  // e.g. bracketSize=16 -> (16/2)*90 = 720px
-  // e.g. bracketSize=8  -> (8/2)*90  = 360px
   const BRACKET_H = (bracketSize / 2) * SLOT_H;
 
   // Group matches by round & sort by position
@@ -62,16 +62,15 @@ function renderBracket() {
   const champion   = finalRound.length > 0 && finalRound[0].winner
     ? _teams[finalRound[0].winner] : null;
 
-  // Start building HTML
   let html = '<div class="bracket-wrap" id="bracket-wrap">';
   html += `<svg id="bracket-svg" xmlns="http://www.w3.org/2000/svg"></svg>`;
 
   for (let r = 1; r <= totalRounds; r++) {
-    const rMatches  = rounds[r] || [];
+    const rMatches   = rounds[r] || [];
     const numMatches = bracketSize / Math.pow(2, r);
-    const slotH     = BRACKET_H / numMatches; // perfect mathematical slot height
-    const isBO3     = rMatches.length > 0 && rMatches[0].format === 'BO3';
-    const roundName = rMatches.length > 0 ? rMatches[0].roundName : `Round ${r}`;
+    const slotH      = BRACKET_H / numMatches;
+    const isBO3      = rMatches.length > 0 && rMatches[0].format === 'BO3';
+    const roundName  = rMatches.length > 0 ? rMatches[0].roundName : `Round ${r}`;
 
     html += `
       <div class="round-col" id="round-col-${r}">
@@ -89,13 +88,12 @@ function renderBracket() {
 
     html += `</div></div>`;
 
-    // Connector gap between round columns
     if (r < totalRounds) {
-      html += `<div class="connector-gap" id="cgap-${r}" style="width:48px;height:${BRACKET_H}px;flex-shrink:0;"></div>`;
+      html += `<div class="connector-gap" id="cgap-${r}" style="width:52px;height:${BRACKET_H}px;flex-shrink:0;"></div>`;
     }
   }
 
-  // Champion card on far right
+  // Champion card
   if (champion) {
     html += `
       <div class="champion-wrap">
@@ -112,19 +110,20 @@ function renderBracket() {
   const root = document.getElementById('bracket-root');
   root.innerHTML = html;
 
-  // Draw lines after layout settles
+  applyZoom();
+  attachCardClickHandlers();
+
   requestAnimationFrame(() => drawConnectors(rounds, totalRounds));
 }
 
-// ── Match Card ────────────────────────────────────────
+// ── Match Card HTML ───────────────────────────────────
 function renderMatchCard(m) {
-  // BYE Card handling
   if (m.isBye) {
     const winnerTeam = m.winner ? _teams[m.winner] : null;
     const name = winnerTeam ? esc(winnerTeam.name) : 'BYE';
     const seed = winnerTeam ? winnerTeam.seed : '';
     return `
-      <div class="match-card bye-card" data-id="${m.id}">
+      <div class="match-card bye-card" data-match-id="${m.id}">
         <div class="team-slot winner">
           <span class="team-seed">${seed}</span>
           <span class="team-name">${name}</span>
@@ -151,7 +150,7 @@ function renderMatchCard(m) {
   const t2Win = !!(m.winner && m.winner === m.team2);
   const isDone = m.status === 'done';
 
-  let cardCls = 'match-card';
+  let cardCls = 'match-card clickable';
   if (isDone)                  cardCls += ' done';
   else if (m.team1 || m.team2) cardCls += ' active';
 
@@ -170,12 +169,13 @@ function renderMatchCard(m) {
   }
 
   return `
-    <div class="${cardCls}" data-id="${m.id}">
+    <div class="${cardCls}" data-match-id="${m.id}">
       ${teamRow(t1, m.team1, t1score, t1Win, t2Win && isDone)}
       ${teamRow(t2, m.team2, t2score, t2Win, t1Win && isDone)}
       <div class="match-foot">
         <span class="format-badge ${m.format.toLowerCase()}">${m.format}</span>
         ${mapDots}
+        <span class="click-hint">🔍 Lihat Detail</span>
       </div>
     </div>`;
 }
@@ -197,7 +197,7 @@ function teamRow(team, teamId, score, isWin, isLose) {
     </div>`;
 }
 
-// ── SVG Connector Lines ───────────────────────────────
+// ── SVG Connectors ────────────────────────────────────
 function drawConnectors(rounds, totalRounds) {
   const svg  = document.getElementById('bracket-svg');
   const wrap = document.getElementById('bracket-wrap');
@@ -213,13 +213,14 @@ function drawConnectors(rounds, totalRounds) {
 
   const wRect = wrap.getBoundingClientRect();
 
-  // Helper to get card center relative to wrap
   const getCardCenter = (cardEl) => {
     const cRect = cardEl.getBoundingClientRect();
+    // Divide by zoom level so coordinates match native wrap space
+    const zoom = _zoomLevel || 1.0;
     return {
-      left:    cRect.left - wRect.left,
-      right:   cRect.right - wRect.left,
-      centerY: (cRect.top + cRect.bottom) / 2 - wRect.top
+      left:    (cRect.left - wRect.left) / zoom,
+      right:   (cRect.right - wRect.left) / zoom,
+      centerY: ((cRect.top + cRect.bottom) / 2 - wRect.top) / zoom
     };
   };
 
@@ -251,9 +252,7 @@ function drawConnectors(rounds, totalRounds) {
       const yEnd = pN.centerY;
       const midX = x1 + (xEnd - x1) * 0.5;
 
-      // Line 1: Top match -> midX -> yEnd -> xEnd
       addPath(svg, `M ${x1} ${y1} H ${midX} V ${yEnd} H ${xEnd}`);
-      // Line 2: Bottom match -> midX -> yEnd
       addPath(svg, `M ${x2} ${y2} H ${midX} V ${yEnd}`);
     });
   }
@@ -262,12 +261,146 @@ function drawConnectors(rounds, totalRounds) {
 function addPath(svg, d) {
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
-  p.setAttribute('stroke', '#94A3B8'); // crisp slate border color
+  p.setAttribute('stroke', '#94A3B8');
   p.setAttribute('stroke-width', '1.5');
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke-linecap', 'square');
   svg.appendChild(p);
 }
+
+// ── ZOOM CONTROLS ─────────────────────────────────────
+function setupZoomControls() {
+  document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
+    if (_zoomLevel < 1.8) {
+      _zoomLevel += 0.15;
+      applyZoom();
+    }
+  });
+
+  document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
+    if (_zoomLevel > 0.55) {
+      _zoomLevel -= 0.15;
+      applyZoom();
+    }
+  });
+
+  document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
+    _zoomLevel = 1.0;
+    applyZoom();
+  });
+}
+
+function applyZoom() {
+  const wrap = document.getElementById('bracket-wrap');
+  const levelText = document.getElementById('zoom-level-text');
+  if (wrap) {
+    wrap.style.transform = `scale(${_zoomLevel})`;
+    wrap.style.transformOrigin = 'top left';
+  }
+  if (levelText) {
+    levelText.textContent = `${Math.round(_zoomLevel * 100)}%`;
+  }
+  // Redraw connectors on zoom
+  if (_meta.totalRounds) {
+    const rounds = {};
+    for (const id in _matches) {
+      const m = _matches[id];
+      if (!rounds[m.round]) rounds[m.round] = [];
+      rounds[m.round].push(m);
+    }
+    drawConnectors(rounds, _meta.totalRounds);
+  }
+}
+
+// ── VIEWER MATCH DETAIL MODAL ─────────────────────────
+function attachCardClickHandlers() {
+  document.querySelectorAll('.match-card.clickable').forEach(card => {
+    card.addEventListener('click', () => {
+      const matchId = card.dataset.matchId;
+      if (matchId) openViewerMatchModal(matchId);
+    });
+  });
+}
+
+function openViewerMatchModal(matchId) {
+  const m = _matches[matchId];
+  if (!m) return;
+
+  const t1 = m.team1 ? (_teams[m.team1]?.name || 'TBD') : 'TBD';
+  const t2 = m.team2 ? (_teams[m.team2]?.name || 'TBD') : 'TBD';
+  const t1Seed = m.team1 ? (_teams[m.team1]?.seed || '') : '';
+  const t2Seed = m.team2 ? (_teams[m.team2]?.seed || '') : '';
+
+  document.getElementById('vm-title').textContent = m.roundName;
+  document.getElementById('vm-format').textContent = m.format;
+
+  const body = document.getElementById('vm-body');
+
+  let statusBadge = '<span class="status-pill pending">🟢 Dalam Proses / Menunggu</span>';
+  if (m.status === 'done') statusBadge = '<span class="status-pill done">🏆 Selesai</span>';
+
+  let scoresContent = '';
+  if (m.format === 'BO3' && m.games) {
+    const { t1wins, t2wins, winner } = calcBO3(m.games, m.team1, m.team2);
+    scoresContent = `
+      <div class="score-tally">
+        <span class="tally-team">${esc(t1)} ${winner === m.team1 ? '👑' : ''}</span>
+        <span class="tally-score">${t1wins}</span>
+        <span class="tally-dash">-</span>
+        <span class="tally-score">${t2wins}</span>
+        <span class="tally-team">${winner === m.team2 ? '👑' : ''} ${esc(t2)}</span>
+      </div>
+      <div class="bo3-map-summary">
+        <div class="map-sum-row"><span>Map 1:</span> <strong>${getGameWinnerName(m.games.g1, m)}</strong></div>
+        <div class="map-sum-row"><span>Map 2:</span> <strong>${getGameWinnerName(m.games.g2, m)}</strong></div>
+        <div class="map-sum-row"><span>Map 3:</span> <strong>${getGameWinnerName(m.games.g3, m)}</strong></div>
+      </div>`;
+  } else {
+    const t1Win = m.winner === m.team1;
+    const t2Win = m.winner === m.team2;
+    scoresContent = `
+      <div class="score-tally">
+        <span class="tally-team">${esc(t1)} ${t1Win ? '👑' : ''}</span>
+        <span class="tally-score">${t1Win ? '1' : '0'}</span>
+        <span class="tally-dash">-</span>
+        <span class="tally-score">${t2Win ? '1' : '0'}</span>
+        <span class="tally-team">${t2Win ? '👑' : ''} ${esc(t2)}</span>
+      </div>`;
+  }
+
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">${statusBadge}</div>
+    <div class="vm-teams-preview">
+      <div class="vm-team-box ${m.winner === m.team1 ? 'winner' : ''}">
+        <span class="vm-seed">#${t1Seed}</span>
+        <span class="vm-name">${esc(t1)}</span>
+      </div>
+      <span class="vm-vs">VS</span>
+      <div class="vm-team-box ${m.winner === m.team2 ? 'winner' : ''}">
+        <span class="vm-seed">#${t2Seed}</span>
+        <span class="vm-name">${esc(t2)}</span>
+      </div>
+    </div>
+    ${scoresContent}
+  `;
+
+  document.getElementById('viewer-match-modal').classList.add('show');
+}
+
+function getGameWinnerName(gameWinnerId, matchObj) {
+  if (!gameWinnerId) return '<span style="color:var(--text-3)">Belum Dimainkan</span>';
+  if (gameWinnerId === matchObj.team1) return `<span style="color:var(--green)">${esc(_teams[matchObj.team1]?.name)}</span>`;
+  if (gameWinnerId === matchObj.team2) return `<span style="color:var(--green)">${esc(_teams[matchObj.team2]?.name)}</span>`;
+  return 'Belum Dimainkan';
+}
+
+function closeViewerMatchModal() {
+  document.getElementById('viewer-match-modal')?.classList.remove('show');
+}
+document.getElementById('vm-close-btn')?.addEventListener('click', closeViewerMatchModal);
+document.getElementById('viewer-match-modal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeViewerMatchModal();
+});
 
 // ── Utility ──────────────────────────────────────────
 function esc(s) {
@@ -277,14 +410,7 @@ function esc(s) {
 
 window.addEventListener('resize', () => {
   if (!_meta.totalRounds || !Object.keys(_matches).length) return;
-  const rounds = {};
-  for (const id in _matches) {
-    const m = _matches[id];
-    if (!rounds[m.round]) rounds[m.round] = [];
-    rounds[m.round].push(m);
-  }
-  for (const r in rounds) rounds[r].sort((a, b) => a.position - b.position);
-  drawConnectors(rounds, _meta.totalRounds);
+  tryRender();
 });
 
 document.addEventListener('DOMContentLoaded', initViewer);
