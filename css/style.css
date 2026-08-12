@@ -1169,5 +1169,44 @@ input[type="range"]::-webkit-slider-thumb {
   50% { box-shadow: 0 0 24px rgba(245, 158, 11, 0.9), 0 0 10px rgba(239, 68, 68, 0.7); }
 }
 
+/* Dynamic Victory Speech Callout Bubble */
+.victory-speech-bubble {
+  position: absolute;
+  top: -42px;
+  left: 50%;
+  transform: translate(-50%, 0) scale(1);
+  background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
+  border: 1.5px solid var(--gold);
+  color: #FBBF24;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.7), 0 6px 16px rgba(0,0,0,0.6);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10002;
+  animation: speech-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.victory-speech-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: var(--gold) transparent transparent transparent;
+}
+
+@keyframes speech-pop {
+  0% { opacity: 0; transform: translate(-50%, 12px) scale(0.5); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+
 
 

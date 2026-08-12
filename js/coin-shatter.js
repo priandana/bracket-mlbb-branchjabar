@@ -1,6 +1,6 @@
 // =====================================================
 // COIN SHATTER & CINEMATIC VICTORY SMASH ENGINE — coin-shatter.js
-// Dynamic canvas particle physics & cinematic impact FX
+// Dynamic canvas particle physics, speech victory & announcer
 // =====================================================
 
 const CoinShatterEngine = (function() {
@@ -9,6 +9,23 @@ const CoinShatterEngine = (function() {
   let particles = [];
   let animId = null;
   let audioCtx = null;
+
+  // Web Speech Voice Announcer
+  function speakVictory(teamName) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel(); // stop any active speech
+      const text = `${teamName || 'Team'}, Victory!`;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.1;
+      utterance.volume = 1.0;
+      utterance.lang = 'en-US';
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('Speech synthesis blocked or unsupported:', e);
+    }
+  }
 
   // Sound synthesis using Web Audio API
   function playImpactSFX() {
@@ -89,7 +106,6 @@ const CoinShatterEngine = (function() {
   function createFissureAndShatterParticles(x, y) {
     const numFragments = 22;
 
-    // Glowing Molten Gold + Obsidian Stone Fragments
     const obsidianColors = ['#0F172A', '#1E293B', '#334155'];
     const moltenColors = ['#F59E0B', '#FBBF24', '#EF4444', '#F97316'];
 
@@ -120,7 +136,6 @@ const CoinShatterEngine = (function() {
       });
     }
 
-    // Sparks & Energy Embers
     const numSparks = 40;
     const sparkColors = ['#F59E0B', '#38BDF8', '#FBBF24', '#FFFFFF', '#EF4444'];
     for (let i = 0; i < numSparks; i++) {
@@ -141,7 +156,6 @@ const CoinShatterEngine = (function() {
       });
     }
 
-    // Smoke embers trailing up
     const numSmoke = 15;
     for (let i = 0; i < numSmoke; i++) {
       particles.push({
@@ -229,9 +243,10 @@ const CoinShatterEngine = (function() {
     }
   }
 
-  function triggerSmash(containerElem, winnerAvatarElem, loserAvatarElem) {
+  function triggerSmash(containerElem, winnerAvatarElem, loserAvatarElem, winnerTeamName = '') {
     if (!canvas) initCanvas();
     playImpactSFX();
+    speakVictory(winnerTeamName);
 
     if (!winnerAvatarElem || !loserAvatarElem) {
       if (containerElem) triggerContainerShake(containerElem);
@@ -282,6 +297,9 @@ const CoinShatterEngine = (function() {
       // Shockwave ring
       createShockwave(lX, lY);
 
+      // Show Speech Victory Callout Bubble
+      showVictorySpeechBubble(winnerAvatarElem, winnerTeamName);
+
       // Apply defeated smoked-out style to loser card
       const loserCard = loserAvatarElem.closest('.arena-card');
       if (loserCard) {
@@ -299,6 +317,36 @@ const CoinShatterEngine = (function() {
         }
       }, 300);
     }, 420);
+  }
+
+  function showVictorySpeechBubble(winnerAvatarElem, teamName) {
+    if (!winnerAvatarElem) return;
+    const winnerCard = winnerAvatarElem.closest('.arena-card');
+    if (!winnerCard) return;
+
+    // Remove existing bubble if any
+    const existing = winnerCard.querySelector('.victory-speech-bubble');
+    if (existing) existing.remove();
+
+    const callouts = [
+      `🔥 ${teamName.toUpperCase()} DOMINATES!`,
+      `🏆 ${teamName.toUpperCase()} VICTORY!`,
+      `⚡ UNSTOPPABLE ${teamName.toUpperCase()}!`,
+      `👑 ${teamName.toUpperCase()} TAKES THE WIN!`
+    ];
+    const speechText = callouts[Math.floor(Math.random() * callouts.length)];
+
+    const bubble = document.createElement('div');
+    bubble.className = 'victory-speech-bubble';
+    bubble.innerHTML = speechText;
+    winnerCard.appendChild(bubble);
+
+    setTimeout(() => {
+      bubble.style.opacity = '0';
+      bubble.style.transform = 'translate(-50%, -15px) scale(0.9)';
+      bubble.style.transition = 'all 0.4s ease';
+      setTimeout(() => bubble.remove(), 400);
+    }, 2800);
   }
 
   function triggerContainerShake(elem) {
@@ -328,7 +376,8 @@ const CoinShatterEngine = (function() {
   return {
     init: initCanvas,
     triggerSmash: triggerSmash,
-    playSFX: playImpactSFX
+    playSFX: playImpactSFX,
+    speakVictory: speakVictory
   };
 })();
 

@@ -512,12 +512,13 @@ function openViewerMatchModal(matchId) {
     if (cards.length >= 2) {
       const winnerCard = t2Win ? cards[1] : cards[0];
       const loserCard  = t2Win ? cards[0] : cards[1];
+      const winnerName = t2Win ? t2 : t1;
       
       const winnerEmblem = winnerCard.querySelector('.arena-emblem');
       const loserEmblem  = loserCard.querySelector('.arena-emblem');
       
       if (winnerEmblem && loserEmblem && typeof CoinShatterEngine !== 'undefined') {
-        CoinShatterEngine.triggerSmash(arenaStage, winnerEmblem, loserEmblem);
+        CoinShatterEngine.triggerSmash(arenaStage, winnerEmblem, loserEmblem, winnerName);
       }
     }
   };
