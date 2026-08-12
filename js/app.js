@@ -502,13 +502,20 @@ function openViewerMatchModal(matchId) {
       <div class="admin-modal-controls">
         <div class="admin-controls-title">👑 PANEL ADMIN: TENTUKAN PEMENANG</div>
         <div class="admin-controls-btns">
-          <button class="admin-pick-btn t1-btn" onclick="quickAdminPickWinner('${m.id}', '${m.team1}')">
+          <button class="admin-pick-btn t1-btn ${t1Win ? 'active-win' : ''}" onclick="quickAdminPickWinner('${m.id}', '${m.team1}')">
             🏆 Menangkan ${esc(t1)}
           </button>
-          <button class="admin-pick-btn t2-btn" onclick="quickAdminPickWinner('${m.id}', '${m.team2}')">
+          <button class="admin-pick-btn t2-btn ${t2Win ? 'active-win' : ''}" onclick="quickAdminPickWinner('${m.id}', '${m.team2}')">
             🏆 Menangkan ${esc(t2)}
           </button>
         </div>
+        ${isDone ? `
+          <div style="margin-top:10px;">
+            <button class="admin-reset-btn" onclick="quickAdminResetMatch('${m.id}')">
+              🔄 Reset / Batalkan Pemenang Match Ini
+            </button>
+          </div>
+        ` : ''}
       </div>
     ` : ''}
 
@@ -567,6 +574,33 @@ async function quickAdminPickWinner(matchId, winnerTeamId) {
     }, 150);
   } catch (err) {
     alert('Gagal menyimpan hasil admin: ' + err.message);
+  }
+}
+
+async function quickAdminResetMatch(matchId) {
+  const m = _matches[matchId];
+  if (!m) return;
+  if (!confirm(`Batalkan hasil pertandingan ${m.roundName}?`)) return;
+
+  const updates = {};
+  updates[`${ROOT}/matches/${m.id}/winner`] = null;
+  updates[`${ROOT}/matches/${m.id}/status`] = 'pending';
+
+  const totalRounds = _meta.totalRounds || 4;
+  const next = getNextMatchInfo(m.round, m.position, totalRounds);
+  if (next) {
+    updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = null;
+    updates[`${ROOT}/matches/${next.matchId}/winner`] = null;
+    updates[`${ROOT}/matches/${next.matchId}/status`] = 'pending';
+  }
+
+  try {
+    await db.ref().update(updates);
+    setTimeout(() => {
+      openViewerMatchModal(matchId);
+    }, 150);
+  } catch (err) {
+    alert('Gagal mereset hasil: ' + err.message);
   }
 }
 
