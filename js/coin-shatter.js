@@ -1,6 +1,6 @@
 // =====================================================
 // COIN SHATTER & CINEMATIC VICTORY SMASH ENGINE — coin-shatter.js
-// Dynamic canvas particle physics, speech victory & announcer
+// Dynamic canvas particle physics, Indonesian female announcer & speech FX
 // =====================================================
 
 const CoinShatterEngine = (function() {
@@ -10,17 +10,51 @@ const CoinShatterEngine = (function() {
   let animId = null;
   let audioCtx = null;
 
-  // Web Speech Voice Announcer
+  // Web Speech Voice Announcer (Indonesian Female Voice prioritized)
   function speakVictory(teamName) {
     if (!('speechSynthesis' in window)) return;
     try {
-      window.speechSynthesis.cancel(); // stop any active speech
-      const text = `${teamName || 'Team'}, Victory!`;
+      window.speechSynthesis.cancel();
+      const cleanName = teamName || 'Tim Pemenang';
+      const phrases = [
+        `${cleanName}, menang!`,
+        `Selamat kepada ${cleanName}!`,
+        `${cleanName} meraih kemenangan!`,
+        `Kemenangan mutlak untuk ${cleanName}!`
+      ];
+      const text = phrases[Math.floor(Math.random() * phrases.length)];
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.05;
-      utterance.pitch = 1.1;
+
+      utterance.rate = 0.98;
+      utterance.pitch = 1.25; // Female voice pitch
       utterance.volume = 1.0;
-      utterance.lang = 'en-US';
+      utterance.lang = 'id-ID';
+
+      const voices = window.speechSynthesis.getVoices();
+      if (voices && voices.length > 0) {
+        // Priority 1: Indonesian female voice or any Indonesian voice
+        const idVoice = voices.find(v => 
+          v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('ind'))
+        );
+        
+        // Priority 2: Female named voice (Gadis, Winda, Google Bahasa Indonesia, Zira, Susan, Natural)
+        const femaleVoice = voices.find(v => 
+          v.name && (
+            v.name.toLowerCase().includes('gadis') ||
+            v.name.toLowerCase().includes('winda') ||
+            v.name.toLowerCase().includes('indonesia') ||
+            v.name.toLowerCase().includes('zira') ||
+            v.name.toLowerCase().includes('female')
+          )
+        );
+
+        if (idVoice) {
+          utterance.voice = idVoice;
+        } else if (femaleVoice) {
+          utterance.voice = femaleVoice;
+        }
+      }
+
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn('Speech synthesis blocked or unsupported:', e);
@@ -261,7 +295,6 @@ const CoinShatterEngine = (function() {
     const lX = loserRect.left + loserRect.width / 2;
     const lY = loserRect.top + loserRect.height / 2;
 
-    // Flying Smash clone of Winner Emblem
     const smashClone = winnerAvatarElem.cloneNode(true);
     smashClone.classList.add('smash-flying-coin');
     smashClone.style.left = `${wX - winnerRect.width / 2}px`;
@@ -270,43 +303,32 @@ const CoinShatterEngine = (function() {
     smashClone.style.height = `${winnerRect.height}px`;
     document.body.appendChild(smashClone);
 
-    // Hide original loser avatar temporarily
     loserAvatarElem.style.opacity = '0';
 
     const deltaX = lX - wX;
     const deltaY = lY - wY;
 
-    // Force reflow
     smashClone.getBoundingClientRect();
 
-    // Phase 1: High speed leap towards Loser
     smashClone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.55) rotate(360deg)`;
     smashClone.style.transition = 'transform 0.42s cubic-bezier(0.15, 0.9, 0.25, 1.25)';
 
-    // Phase 2: Fissure Cracks & Impact Flash on collision
     setTimeout(() => {
-      // Impact Flash
       createImpactFlash();
 
-      // Fissure shatter explosion
       createFissureAndShatterParticles(lX, lY);
 
-      // Modal container shake & punch
       if (containerElem) triggerContainerShake(containerElem);
 
-      // Shockwave ring
       createShockwave(lX, lY);
 
-      // Show Speech Victory Callout Bubble
       showVictorySpeechBubble(winnerAvatarElem, winnerTeamName);
 
-      // Apply defeated smoked-out style to loser card
       const loserCard = loserAvatarElem.closest('.arena-card');
       if (loserCard) {
         loserCard.classList.add('defeated-smoked-out');
       }
 
-      // Smoothly remove flying clone
       smashClone.style.opacity = '0';
       smashClone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.0)`;
       setTimeout(() => {
@@ -324,15 +346,15 @@ const CoinShatterEngine = (function() {
     const winnerCard = winnerAvatarElem.closest('.arena-card');
     if (!winnerCard) return;
 
-    // Remove existing bubble if any
     const existing = winnerCard.querySelector('.victory-speech-bubble');
     if (existing) existing.remove();
 
+    const name = (teamName || 'Tim Pemenang').toUpperCase();
     const callouts = [
-      `🔥 ${teamName.toUpperCase()} DOMINATES!`,
-      `🏆 ${teamName.toUpperCase()} VICTORY!`,
-      `⚡ UNSTOPPABLE ${teamName.toUpperCase()}!`,
-      `👑 ${teamName.toUpperCase()} TAKES THE WIN!`
+      `🔥 ${name} MENANG!`,
+      `🏆 VICTORY ${name}!`,
+      `⚡ ${name} MENGUASAI!`,
+      `👑 ${name} JUARA!`
     ];
     const speechText = callouts[Math.floor(Math.random() * callouts.length)];
 
@@ -380,6 +402,13 @@ const CoinShatterEngine = (function() {
     speakVictory: speakVictory
   };
 })();
+
+// Pre-load voices
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+  };
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   CoinShatterEngine.init();
