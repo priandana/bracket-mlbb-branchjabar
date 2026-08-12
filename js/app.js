@@ -497,27 +497,35 @@ function openViewerMatchModal(matchId) {
     </div>
 
     ${scoresContent}
+
+    <div style="text-align:center;margin-top:16px;">
+      <button id="modal-demo-smash-btn" class="modal-smash-btn">💥 Tes Animasi Smash</button>
+    </div>
   `;
 
   document.getElementById('viewer-match-modal').classList.add('show');
   _activeViewerMatchId = matchId;
 
-  if (isDone && (t1Win || t2Win) && typeof CoinShatterEngine !== 'undefined') {
-    setTimeout(() => {
-      const arenaStage = body.querySelector('.arena-stage');
-      const cards = body.querySelectorAll('.arena-card');
-      if (cards.length >= 2) {
-        const winnerCard = t1Win ? cards[0] : cards[1];
-        const loserCard  = t1Win ? cards[1] : cards[0];
-        
-        const winnerEmblem = winnerCard.querySelector('.arena-emblem');
-        const loserEmblem  = loserCard.querySelector('.arena-emblem');
-        
-        if (winnerEmblem && loserEmblem) {
-          CoinShatterEngine.triggerSmash(arenaStage, winnerEmblem, loserEmblem);
-        }
+  const triggerModalSmash = () => {
+    const arenaStage = body.querySelector('.arena-stage');
+    const cards = body.querySelectorAll('.arena-card');
+    if (cards.length >= 2) {
+      const winnerCard = t2Win ? cards[1] : cards[0];
+      const loserCard  = t2Win ? cards[0] : cards[1];
+      
+      const winnerEmblem = winnerCard.querySelector('.arena-emblem');
+      const loserEmblem  = loserCard.querySelector('.arena-emblem');
+      
+      if (winnerEmblem && loserEmblem && typeof CoinShatterEngine !== 'undefined') {
+        CoinShatterEngine.triggerSmash(arenaStage, winnerEmblem, loserEmblem);
       }
-    }, 280);
+    }
+  };
+
+  document.getElementById('modal-demo-smash-btn')?.addEventListener('click', triggerModalSmash);
+
+  if (isDone && (t1Win || t2Win) && typeof CoinShatterEngine !== 'undefined') {
+    setTimeout(triggerModalSmash, 300);
   }
 }
 
