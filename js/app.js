@@ -498,6 +498,20 @@ function openViewerMatchModal(matchId) {
 
     ${scoresContent}
 
+    ${(localStorage.getItem('mlbb_admin_active') === 'true' && m.team1 && m.team2 && !m.isBye) ? `
+      <div class="admin-modal-controls">
+        <div class="admin-controls-title">👑 PANEL ADMIN: TENTUKAN PEMENANG</div>
+        <div class="admin-controls-btns">
+          <button class="admin-pick-btn t1-btn" onclick="quickAdminPickWinner('${m.id}', '${m.team1}')">
+            🏆 Menangkan ${esc(t1)}
+          </button>
+          <button class="admin-pick-btn t2-btn" onclick="quickAdminPickWinner('${m.id}', '${m.team2}')">
+            🏆 Menangkan ${esc(t2)}
+          </button>
+        </div>
+      </div>
+    ` : ''}
+
     <div style="text-align:center;margin-top:16px;">
       <button id="modal-demo-smash-btn" class="modal-smash-btn">💥 Tes Animasi Smash</button>
     </div>
@@ -527,6 +541,32 @@ function openViewerMatchModal(matchId) {
 
   if (isDone && (t1Win || t2Win) && typeof CoinShatterEngine !== 'undefined') {
     setTimeout(triggerModalSmash, 300);
+  }
+}
+
+async function quickAdminPickWinner(matchId, winnerTeamId) {
+  const m = _matches[matchId];
+  if (!m || !winnerTeamId) return;
+
+  const updates = {};
+  updates[`${ROOT}/matches/${m.id}/winner`] = winnerTeamId;
+  updates[`${ROOT}/matches/${m.id}/status`] = 'done';
+
+  const totalRounds = _meta.totalRounds || 4;
+  const next = getNextMatchInfo(m.round, m.position, totalRounds);
+  if (next) {
+    updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = winnerTeamId;
+  } else {
+    updates[`${ROOT}/settings/status`] = 'done';
+  }
+
+  try {
+    await db.ref().update(updates);
+    setTimeout(() => {
+      openViewerMatchModal(matchId);
+    }, 150);
+  } catch (err) {
+    alert('Gagal menyimpan hasil admin: ' + err.message);
   }
 }
 

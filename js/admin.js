@@ -73,6 +73,7 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
   }
 
   isLoggedIn = true;
+  localStorage.setItem('mlbb_admin_active', 'true');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-layout').classList.add('show');
   initAdminListeners();
@@ -587,6 +588,7 @@ document.getElementById('change-pw-form')?.addEventListener('submit', async (e) 
 document.getElementById('logout-btn')?.addEventListener('click', () => {
   if (!confirm('Keluar dari panel admin?')) return;
   isLoggedIn = false;
+  localStorage.removeItem('mlbb_admin_active');
   document.getElementById('admin-layout').classList.remove('show');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-pw').value = '';

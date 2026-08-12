@@ -1207,6 +1207,61 @@ input[type="range"]::-webkit-slider-thumb {
   100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 
+/* Admin Quick Winner Controls Panel */
+.admin-modal-controls {
+  margin-top: 16px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px dashed var(--gold);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: center;
+}
+
+.admin-controls-title {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--gold);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.admin-controls-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.admin-pick-btn {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  color: #FFF;
+}
+
+.admin-pick-btn.t1-btn {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 199, 0.3));
+  border-color: var(--cyan);
+}
+
+.admin-pick-btn.t2-btn {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3));
+  border-color: var(--green);
+}
+
+.admin-pick-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+
 
 
 
