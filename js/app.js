@@ -719,4 +719,27 @@ window.addEventListener('resize', () => {
   tryRender();
 });
 
-document.addEventListener('DOMContentLoaded', initViewer);
+// ── Theme Toggle ──────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const knob = document.getElementById('theme-toggle-knob');
+  if (knob) knob.textContent = theme === 'light' ? '☀️' : '🌙';
+  localStorage.setItem('mlbb_theme', theme);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initViewer();
+
+  // Apply saved theme on load
+  const savedTheme = localStorage.getItem('mlbb_theme') || 'dark';
+  applyTheme(savedTheme);
+
+  // Wire toggle button
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    });
+  }
+});

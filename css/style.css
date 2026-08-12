@@ -4,7 +4,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700;800&display=swap');
 
-/* ── Variables ── */
+/* ── Variables (Dark Mode — Default) ── */
 :root {
   --bg:          #1A1C23;
   --bg-pattern:  radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px);
@@ -42,6 +42,36 @@
   --font-heading: 'Rajdhani', sans-serif;
 }
 
+/* ── Variables (Light Mode) ── */
+[data-theme="light"] {
+  --bg:          #F0F4FF;
+  --bg-pattern:  radial-gradient(rgba(99, 102, 241, 0.09) 1px, transparent 1px);
+  --surface:     #FFFFFF;
+  --surface-2:   #EEF2FF;
+  --surface-3:   #E0E7FF;
+  --header-bg:   #FFFFFF;
+  --border:      #C7D2FE;
+  --border-md:   #A5B4FC;
+
+  --cyan:        #0284C7;
+  --cyan-glow:   rgba(2, 132, 199, 0.2);
+  --gold:        #D97706;
+  --gold-glow:   rgba(217, 119, 6, 0.2);
+  --green:       #059669;
+  --green-glow:  rgba(5, 150, 105, 0.2);
+  --red:         #DC2626;
+  --purple:      #7C3AED;
+
+  --text-1:      #1E1B4B;
+  --text-2:      #3730A3;
+  --text-3:      #6366F1;
+  --text-4:      #A5B4FC;
+
+  --shadow-sm:   0 2px 6px rgba(99,102,241,0.12);
+  --shadow:      0 6px 20px rgba(99,102,241,0.18);
+  --shadow-lg:   0 12px 36px rgba(99,102,241,0.22);
+}
+
 /* ── Reset ── */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }
@@ -52,6 +82,9 @@ body {
   background-size: 20px 20px;
   color: var(--text-1);
   min-height: 100vh;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
 }
 
 /* ── Scrollbar ── */
@@ -59,6 +92,114 @@ body {
 ::-webkit-scrollbar-track { background: #12141A; }
 ::-webkit-scrollbar-thumb { background: #333745; border-radius:4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+
+[data-theme="light"] ::-webkit-scrollbar-track { background: #E0E7FF; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #A5B4FC; }
+
+/* ── Light mode surface & card overrides ── */
+[data-theme="light"] .site-header {
+  box-shadow: 0 4px 20px rgba(99,102,241,0.12);
+  border-bottom-color: var(--border);
+}
+[data-theme="light"] .round-header {
+  background: linear-gradient(180deg, #EEF2FF, #E0E7FF);
+  border-color: var(--border);
+  box-shadow: 0 4px 10px rgba(99,102,241,0.1);
+}
+[data-theme="light"] .round-label { color: #1E1B4B; }
+[data-theme="light"] .match-card {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 3px 12px rgba(99,102,241,0.12);
+}
+[data-theme="light"] .match-card:hover {
+  box-shadow: 0 6px 24px rgba(99,102,241,0.22);
+}
+[data-theme="light"] .match-card.done { border-color: var(--gold); }
+[data-theme="light"] .team-slot { border-bottom-color: var(--border); }
+[data-theme="light"] .team-slot.winner { background: rgba(5,150,105,0.08); }
+[data-theme="light"] .team-slot.loser  { background: rgba(220,38,38,0.05); opacity: 0.55; }
+[data-theme="light"] .team-avatar {
+  background: linear-gradient(135deg, #6366F1, #A855F7);
+  color: #fff;
+}
+[data-theme="light"] .match-foot { border-top-color: var(--border); }
+[data-theme="light"] .champion-card {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-color: var(--gold);
+  box-shadow: 0 8px 32px rgba(217,119,6,0.3);
+}
+[data-theme="light"] .modal {
+  background: var(--surface);
+  border-color: var(--border);
+}
+[data-theme="light"] .modal-overlay {
+  background: rgba(30,27,75,0.6);
+}
+[data-theme="light"] .zoom-toolbar {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 4px 14px rgba(99,102,241,0.12);
+}
+[data-theme="light"] .live-toast {
+  background: rgba(255,255,255,0.95);
+  border-color: var(--border);
+}
+[data-theme="light"] .live-toast-msg { color: #1E1B4B; }
+[data-theme="light"] #champion-screen {
+  background: radial-gradient(ellipse at center, rgba(238,242,255,0.98) 0%, rgba(224,231,255,0.99) 70%);
+}
+[data-theme="light"] .champ-team-name {
+  color: #1E1B4B;
+  text-shadow:
+    0 0 40px rgba(217,119,6,0.5),
+    0 2px 10px rgba(99,102,241,0.15);
+}
+[data-theme="light"] .champ-label { color: var(--gold); }
+[data-theme="light"] .champ-sub   { color: var(--text-3); }
+
+/* =====================================================================
+   THEME TOGGLE BUTTON
+   ===================================================================== */
+.theme-toggle-btn {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  background: #2D313E;
+  border-radius: 14px;
+  border: 1.5px solid #4B5165;
+  cursor: pointer;
+  transition: background 0.35s ease, border-color 0.35s ease;
+  flex-shrink: 0;
+  outline: none;
+}
+
+[data-theme="light"] .theme-toggle-btn {
+  background: linear-gradient(135deg, #818CF8, #6366F1);
+  border-color: #A5B4FC;
+}
+
+.theme-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+[data-theme="light"] .theme-toggle-knob {
+  transform: translateX(24px);
+  background: #FFFFFF;
+}
+
 
 /* =====================================================
    SITE HEADER — Premium Esports Bar
