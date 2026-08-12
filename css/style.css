@@ -171,13 +171,85 @@ body {
 }
 [data-theme="light"] .champion-name { color: #78350F; }
 
-[data-theme="light"] .modal {
+[data-theme="light"] .modal,
+[data-theme="light"] .epic-modal {
   background: #FFFFFF;
   border-color: #CED4DA;
-  box-shadow: 0 20px 50px rgba(33,37,41,0.2);
+  box-shadow: 0 20px 60px rgba(17,24,39,0.3);
 }
 [data-theme="light"] .modal-overlay {
   background: rgba(17,24,39,0.55);
+}
+[data-theme="light"] .modal-title { color: #111827; }
+[data-theme="light"] .modal-sub   { color: #6B7280; }
+[data-theme="light"] .modal-close {
+  background: #E9ECEF;
+  color: #374151;
+  border-color: #CED4DA;
+}
+[data-theme="light"] .modal-close:hover {
+  background: #CED4DA;
+  color: #111827;
+}
+
+[data-theme="light"] .arena-card {
+  background: #F8F9FA;
+  border-color: #CED4DA;
+}
+[data-theme="light"] .arena-card.winner {
+  background: linear-gradient(145deg, #ECFDF5, #D1FAE5);
+  border-color: #059669;
+  box-shadow: 0 4px 16px rgba(5,150,105,0.15);
+}
+[data-theme="light"] .arena-name { color: #111827; font-weight: 800; }
+[data-theme="light"] .arena-seed { color: #0284C7; }
+[data-theme="light"] .arena-emblem {
+  background: linear-gradient(135deg, #E9ECEF, #DEE2E6);
+  border-color: #ADB5BD;
+  color: #111827;
+}
+[data-theme="light"] .arena-card.winner .arena-emblem {
+  background: linear-gradient(135deg, #059669, #047857);
+  color: #FFFFFF;
+  border-color: #059669;
+}
+[data-theme="light"] .arena-vs-shield {
+  background: linear-gradient(135deg, #343A40, #212529);
+  color: #F59E0B;
+  border-color: #D97706;
+}
+
+[data-theme="light"] .score-tally {
+  background: #F8F9FA;
+  border-color: #CED4DA;
+}
+[data-theme="light"] .tally-team { color: #111827; font-weight: 700; }
+[data-theme="light"] .tally-score { color: #111827; font-weight: 900; }
+[data-theme="light"] .tally-dash  { color: #6B7280; }
+
+[data-theme="light"] .admin-modal-controls {
+  background: rgba(217, 119, 6, 0.08);
+  border-color: #D97706;
+}
+[data-theme="light"] .admin-controls-title { color: #D97706; }
+[data-theme="light"] .admin-pick-btn.t1-btn {
+  background: linear-gradient(135deg, #E0F2FE, #BAE6FD);
+  border-color: #0284C7;
+  color: #0369A1;
+}
+[data-theme="light"] .admin-pick-btn.t2-btn {
+  background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+  border-color: #059669;
+  color: #047857;
+}
+[data-theme="light"] .admin-reset-btn {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #DC2626;
+}
+[data-theme="light"] .admin-reset-btn:hover {
+  background: rgba(220, 38, 38, 0.2);
+  color: #991B1B;
 }
 [data-theme="light"] .zoom-toolbar {
   background: #FFFFFF;
@@ -939,7 +1011,7 @@ input[type="range"]::-webkit-slider-thumb {
   margin-bottom: 16px; border: 1px solid var(--border);
 }
 .tally-team { font-size: 0.88rem; font-weight: 700; color: var(--text-2); }
-.tally-score { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800; color: #FFFFFF; }
+.tally-score { font-family: var(--font-heading); font-size: 2.2rem; font-weight: 800; color: var(--text-1); }
 .tally-dash { color: var(--text-4); font-size: 1.2rem; }
 
 .divider { height: 1px; background: var(--border); margin: 18px 0; }
@@ -1043,7 +1115,7 @@ input[type="range"]::-webkit-slider-thumb {
   font-family: var(--font-heading);
   font-size: 1.05rem;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--text-1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
