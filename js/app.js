@@ -450,7 +450,7 @@ function drawConnectors(rounds, totalRounds) {
 function addPath(svg, d) {
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
-  p.setAttribute('stroke', '#FFFFFF');
+  p.setAttribute('stroke', 'var(--connector-line, #FFFFFF)');
   p.setAttribute('stroke-width', '1.8');
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke-linecap', 'square');

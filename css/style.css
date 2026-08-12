@@ -40,36 +40,39 @@
 
   --font: 'Inter', system-ui, sans-serif;
   --font-heading: 'Rajdhani', sans-serif;
+  --connector-line: #475569;
 }
 
-/* ── Variables (Light Mode) ── */
+/* ── Variables (Light Mode — Soft Slate Eye-Care) ── */
 [data-theme="light"] {
-  --bg:          #F0F4FF;
-  --bg-pattern:  radial-gradient(rgba(99, 102, 241, 0.09) 1px, transparent 1px);
+  --bg:          #F1F5F9;
+  --bg-pattern:  radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
   --surface:     #FFFFFF;
-  --surface-2:   #EEF2FF;
-  --surface-3:   #E0E7FF;
+  --surface-2:   #F8FAFC;
+  --surface-3:   #E2E8F0;
   --header-bg:   #FFFFFF;
-  --border:      #C7D2FE;
-  --border-md:   #A5B4FC;
+  --border:      #CBD5E1;
+  --border-md:   #94A3B8;
 
   --cyan:        #0284C7;
-  --cyan-glow:   rgba(2, 132, 199, 0.2);
+  --cyan-glow:   rgba(2, 132, 199, 0.12);
   --gold:        #D97706;
-  --gold-glow:   rgba(217, 119, 6, 0.2);
+  --gold-glow:   rgba(217, 119, 6, 0.12);
   --green:       #059669;
-  --green-glow:  rgba(5, 150, 105, 0.2);
+  --green-glow:  rgba(5, 150, 105, 0.12);
   --red:         #DC2626;
   --purple:      #7C3AED;
 
-  --text-1:      #1E1B4B;
-  --text-2:      #3730A3;
-  --text-3:      #6366F1;
-  --text-4:      #A5B4FC;
+  --text-1:      #0F172A;
+  --text-2:      #334155;
+  --text-3:      #64748B;
+  --text-4:      #94A3B8;
 
-  --shadow-sm:   0 2px 6px rgba(99,102,241,0.12);
-  --shadow:      0 6px 20px rgba(99,102,241,0.18);
-  --shadow-lg:   0 12px 36px rgba(99,102,241,0.22);
+  --shadow-sm:   0 1px 3px rgba(15,23,42,0.05);
+  --shadow:      0 4px 12px rgba(15,23,42,0.07);
+  --shadow-lg:   0 10px 25px rgba(15,23,42,0.1);
+
+  --connector-line: #64748B;
 }
 
 /* ── Reset ── */
@@ -93,70 +96,108 @@ body {
 ::-webkit-scrollbar-thumb { background: #333745; border-radius:4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
 
-[data-theme="light"] ::-webkit-scrollbar-track { background: #E0E7FF; }
-[data-theme="light"] ::-webkit-scrollbar-thumb { background: #A5B4FC; }
+[data-theme="light"] ::-webkit-scrollbar-track { background: #E2E8F0; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #94A3B8; }
 
-/* ── Light mode surface & card overrides ── */
+/* ── Light mode surface & card overrides (Eye-Care Slate) ── */
 [data-theme="light"] .site-header {
-  box-shadow: 0 4px 20px rgba(99,102,241,0.12);
-  border-bottom-color: var(--border);
+  box-shadow: 0 2px 10px rgba(15,23,42,0.05);
+  border-bottom-color: #E2E8F0;
 }
 [data-theme="light"] .round-header {
-  background: linear-gradient(180deg, #EEF2FF, #E0E7FF);
-  border-color: var(--border);
-  box-shadow: 0 4px 10px rgba(99,102,241,0.1);
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  border-bottom: 2px solid var(--cyan);
+  box-shadow: 0 2px 6px rgba(15,23,42,0.04);
 }
-[data-theme="light"] .round-label { color: #1E1B4B; }
+[data-theme="light"] .round-label { color: #0F172A; }
+
 [data-theme="light"] .match-card {
-  background: var(--surface);
-  border-color: var(--border);
-  box-shadow: 0 3px 12px rgba(99,102,241,0.12);
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.05);
 }
 [data-theme="light"] .match-card:hover {
-  box-shadow: 0 6px 24px rgba(99,102,241,0.22);
+  box-shadow: 0 6px 18px rgba(15,23,42,0.1);
+  border-color: #94A3B8;
 }
 [data-theme="light"] .match-card.done { border-color: var(--gold); }
-[data-theme="light"] .team-slot { border-bottom-color: var(--border); }
-[data-theme="light"] .team-slot.winner { background: rgba(5,150,105,0.08); }
-[data-theme="light"] .team-slot.loser  { background: rgba(220,38,38,0.05); opacity: 0.55; }
-[data-theme="light"] .team-avatar {
-  background: linear-gradient(135deg, #6366F1, #A855F7);
-  color: #fff;
+
+[data-theme="light"] .match-card.bye-card {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  opacity: 0.85;
 }
-[data-theme="light"] .match-foot { border-top-color: var(--border); }
+[data-theme="light"] .match-card.bye-card .team-slot {
+  background: #F1F5F9;
+}
+
+[data-theme="light"] .team-slot {
+  background: #FFFFFF;
+  border-bottom-color: #F1F5F9;
+}
+[data-theme="light"] .team-slot.winner { background: rgba(5,150,105,0.08); }
+[data-theme="light"] .team-slot.loser  { background: rgba(241,245,249,0.7); opacity: 0.6; }
+[data-theme="light"] .tbd-slot {
+  background: #F8FAFC;
+  color: #94A3B8;
+}
+
+[data-theme="light"] .team-avatar {
+  background: linear-gradient(135deg, #0284C7, #0369A1);
+  color: #FFFFFF;
+}
+[data-theme="light"] .match-foot {
+  background: #F8FAFC;
+  border-top-color: #E2E8F0;
+}
 [data-theme="light"] .champion-card {
   background: linear-gradient(135deg, #FEF3C7, #FDE68A);
   border-color: var(--gold);
-  box-shadow: 0 8px 32px rgba(217,119,6,0.3);
+  box-shadow: 0 6px 20px rgba(217,119,6,0.18);
 }
+[data-theme="light"] .champion-name { color: #78350F; }
+
 [data-theme="light"] .modal {
-  background: var(--surface);
-  border-color: var(--border);
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  box-shadow: 0 20px 50px rgba(15,23,42,0.15);
 }
 [data-theme="light"] .modal-overlay {
-  background: rgba(30,27,75,0.6);
+  background: rgba(15,23,42,0.45);
 }
 [data-theme="light"] .zoom-toolbar {
-  background: var(--surface);
-  border-color: var(--border);
-  box-shadow: 0 4px 14px rgba(99,102,241,0.12);
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(15,23,42,0.06);
 }
+[data-theme="light"] .zoom-btn {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #334155;
+}
+[data-theme="light"] .zoom-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
 [data-theme="light"] .live-toast {
-  background: rgba(255,255,255,0.95);
-  border-color: var(--border);
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.1);
 }
-[data-theme="light"] .live-toast-msg { color: #1E1B4B; }
+[data-theme="light"] .live-toast-msg { color: #0F172A; }
+
 [data-theme="light"] #champion-screen {
-  background: radial-gradient(ellipse at center, rgba(238,242,255,0.98) 0%, rgba(224,231,255,0.99) 70%);
+  background: radial-gradient(ellipse at center, rgba(248,250,252,0.98) 0%, rgba(241,245,249,0.99) 70%);
 }
 [data-theme="light"] .champ-team-name {
-  color: #1E1B4B;
-  text-shadow:
-    0 0 40px rgba(217,119,6,0.5),
-    0 2px 10px rgba(99,102,241,0.15);
+  color: #0F172A;
+  text-shadow: 0 0 30px rgba(217,119,6,0.3);
 }
 [data-theme="light"] .champ-label { color: var(--gold); }
-[data-theme="light"] .champ-sub   { color: var(--text-3); }
+[data-theme="light"] .champ-sub   { color: #64748B; }
+
 
 /* =====================================================================
    THEME TOGGLE BUTTON
