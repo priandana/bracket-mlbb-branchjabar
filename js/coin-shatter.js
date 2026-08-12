@@ -10,7 +10,7 @@ const CoinShatterEngine = (function() {
   let animId = null;
   let audioCtx = null;
 
-  // Web Speech Voice Announcer (Indonesian Female Voice prioritized)
+  // Web Speech Voice Announcer (Strict Female Voice Prioritization)
   function speakVictory(teamName) {
     if (!('speechSynthesis' in window)) return;
     try {
@@ -25,33 +25,40 @@ const CoinShatterEngine = (function() {
       const text = phrases[Math.floor(Math.random() * phrases.length)];
       const utterance = new SpeechSynthesisUtterance(text);
 
-      utterance.rate = 0.98;
-      utterance.pitch = 1.25; // Female voice pitch
+      utterance.rate = 1.0;
+      utterance.pitch = 1.5; // Distinct high female voice pitch
       utterance.volume = 1.0;
       utterance.lang = 'id-ID';
 
       const voices = window.speechSynthesis.getVoices();
       if (voices && voices.length > 0) {
-        // Priority 1: Indonesian female voice or any Indonesian voice
-        const idVoice = voices.find(v => 
-          v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('ind'))
-        );
-        
-        // Priority 2: Female named voice (Gadis, Winda, Google Bahasa Indonesia, Zira, Susan, Natural)
-        const femaleVoice = voices.find(v => 
-          v.name && (
-            v.name.toLowerCase().includes('gadis') ||
-            v.name.toLowerCase().includes('winda') ||
-            v.name.toLowerCase().includes('indonesia') ||
-            v.name.toLowerCase().includes('zira') ||
-            v.name.toLowerCase().includes('female')
-          )
+        const maleKeywords = ['andika', 'ardi', 'david', 'mark', 'george', 'male', 'guy', 'man', 'stefan'];
+        const femaleKeywords = ['gadis', 'winda', 'woni', 'zira', 'susan', 'aria', 'jenny', 'google', 'female', 'woman', 'girl', 'natural'];
+
+        const isMale = (v) => maleKeywords.some(m => v.name.toLowerCase().includes(m));
+        const isFemale = (v) => femaleKeywords.some(f => v.name.toLowerCase().includes(f));
+
+        // 1. Indonesian Female Voice
+        let selectedVoice = voices.find(v => 
+          v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('ind')) &&
+          !isMale(v) && isFemale(v)
         );
 
-        if (idVoice) {
-          utterance.voice = idVoice;
-        } else if (femaleVoice) {
-          utterance.voice = femaleVoice;
+        // 2. Any Indonesian Non-Male Voice
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => 
+            v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('ind')) &&
+            !isMale(v)
+          );
+        }
+
+        // 3. Any Female Voice
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => isFemale(v) && !isMale(v));
+        }
+
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
         }
       }
 
