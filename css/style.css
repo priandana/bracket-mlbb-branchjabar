@@ -137,7 +137,10 @@ body {
   border-bottom-color: #F1F5F9;
 }
 [data-theme="light"] .team-slot.winner { background: rgba(5,150,105,0.08); }
+[data-theme="light"] .team-slot.winner .team-name { color: #0F172A; font-weight: 700; }
 [data-theme="light"] .team-slot.loser  { background: rgba(241,245,249,0.7); opacity: 0.6; }
+[data-theme="light"] .team-name { color: #0F172A; }
+[data-theme="light"] .team-seed { background: #F1F5F9; color: #475569; border-right-color: #E2E8F0; }
 [data-theme="light"] .tbd-slot {
   background: #F8FAFC;
   color: #94A3B8;
@@ -505,7 +508,7 @@ body {
 }
 .team-slot.winner .team-name {
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--text-1);
 }
 .team-slot.loser {
   opacity: 0.45;
