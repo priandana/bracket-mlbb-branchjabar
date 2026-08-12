@@ -1,0 +1,431 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Presentasi Turnamen Mobile Legends - Aturan, Format, Hadiah, dan Info Lengkap." />
+  <title>MLBB Tournament — Presentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0D0F15; --surface: #161923; --surface-2: #1E2130;
+      --border: #2A2F3F; --cyan: #38BDF8; --cyan-dim: rgba(56,189,248,0.12);
+      --cyan-glow: rgba(56,189,248,0.4); --gold: #F59E0B; --gold-glow: rgba(245,158,11,0.4);
+      --purple: #A855F7; --green: #10B981; --red: #EF4444;
+      --text-1: #FFFFFF; --text-2: #E2E8F0; --text-3: #94A3B8; --text-4: #64748B;
+      --font: "Inter",system-ui,sans-serif; --font-heading: "Rajdhani",sans-serif;
+      --font-title: "Orbitron",monospace;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font);background:var(--bg);color:var(--text-1);overflow:hidden;height:100vh;width:100vw;user-select:none;}
+    .slides-wrapper{position:relative;width:100%;height:100vh;overflow:hidden;}
+    .slide{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:translateX(60px) scale(0.97);transition:opacity 0.65s cubic-bezier(0.4,0,0.2,1),transform 0.65s cubic-bezier(0.4,0,0.2,1);pointer-events:none;padding:40px 80px;overflow:hidden;}
+    .slide.active{opacity:1;transform:translateX(0) scale(1);pointer-events:all;}
+    .slide.exit-left{opacity:0;transform:translateX(-60px) scale(0.97);}
+    .slide::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(56,189,248,0.06) 1px,transparent 1px);background-size:28px 28px;z-index:0;}
+    .slide-content{position:relative;z-index:2;width:100%;max-width:1200px;}
+    .slide-tag{display:inline-flex;align-items:center;gap:8px;background:var(--cyan-dim);border:1px solid var(--cyan);color:var(--cyan);font-family:var(--font-heading);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 16px;border-radius:100px;margin-bottom:20px;}
+    .tag-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 1.6s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.5);}}
+    .slide-title{font-family:var(--font-title);font-size:clamp(1.8rem,4vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:12px;background:linear-gradient(135deg,#FFFFFF 30%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .gold-text{background:linear-gradient(135deg,var(--gold) 0%,#FCD34D 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .slide-subtitle{font-family:var(--font-heading);font-size:clamp(1rem,1.6vw,1.3rem);color:var(--text-3);font-weight:600;letter-spacing:1px;margin-bottom:40px;}
+    .divider{width:80px;height:3px;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:2px;margin:16px 0 36px;}
+    .cards-grid{display:grid;gap:16px;}
+    .cards-grid.col-2{grid-template-columns:1fr 1fr;}
+    .cards-grid.col-3{grid-template-columns:1fr 1fr 1fr;}
+    .cards-grid.col-4{grid-template-columns:repeat(4,1fr);}
+    .card{background:linear-gradient(135deg,var(--surface) 0%,var(--surface-2) 100%);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative;overflow:hidden;transition:transform 0.3s ease,border-color 0.3s ease;}
+    .card:hover{transform:translateY(-3px);border-color:var(--cyan);}
+    .card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);}
+    .card.gold-accent::before{background:linear-gradient(90deg,var(--gold),transparent);}
+    .card.purple-accent::before{background:linear-gradient(90deg,var(--purple),transparent);}
+    .card.green-accent::before{background:linear-gradient(90deg,var(--green),transparent);}
+    .card-icon{font-size:2rem;margin-bottom:12px;display:block;}
+    .card-title{font-family:var(--font-heading);font-size:1.05rem;font-weight:700;color:var(--text-1);letter-spacing:0.5px;margin-bottom:8px;}
+    .card-body{font-size:0.875rem;color:var(--text-3);line-height:1.7;}
+    .rule-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
+    .rule-item{display:flex;align-items:flex-start;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;transition:border-color 0.25s;}
+    .rule-item:hover{border-color:rgba(56,189,248,0.5);}
+    .rule-number{flex-shrink:0;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),#0EA5E9);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:13px;font-weight:800;color:#fff;box-shadow:0 0 10px var(--cyan-glow);}
+    .rule-text{font-size:0.92rem;color:var(--text-2);line-height:1.65;}
+    .rule-text strong{color:var(--cyan);font-weight:700;}
+    #slide-1{background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(56,189,248,0.1) 0%,transparent 70%),var(--bg);text-align:center;}
+    .hero-logo{font-size:5rem;margin-bottom:24px;display:block;filter:drop-shadow(0 0 30px rgba(56,189,248,0.6));animation:float 3s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+    .hero-title{font-family:var(--font-title);font-size:clamp(2.2rem,6vw,5rem);font-weight:900;line-height:1;background:linear-gradient(135deg,#fff 20%,var(--cyan) 60%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+    .hero-sub{font-family:var(--font-heading);font-size:clamp(1rem,2vw,1.4rem);color:var(--text-3);letter-spacing:4px;text-transform:uppercase;margin-bottom:36px;}
+    .hero-badges{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .hero-badge{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:8px 20px;font-size:0.875rem;font-weight:600;color:var(--text-2);transition:border-color 0.3s,transform 0.3s;}
+    .hero-badge:hover{border-color:var(--cyan);transform:translateY(-2px);}
+    .glow-ring{position:absolute;width:500px;height:500px;border-radius:50%;border:1px solid rgba(56,189,248,0.1);top:50%;left:50%;transform:translate(-50%,-50%);animation:ring-spin 12s linear infinite;z-index:1;}
+    .glow-ring:nth-child(2){width:700px;height:700px;border-color:rgba(168,85,247,0.06);animation-duration:20s;animation-direction:reverse;}
+    @keyframes ring-spin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+    .podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-top:8px;}
+    .podium-item{display:flex;flex-direction:column;align-items:center;gap:10px;}
+    .podium-medal{font-size:2.2rem;}
+    .podium-prize-label{font-family:var(--font-heading);font-size:1.5rem;font-weight:800;}
+    .podium-block{width:200px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden;}
+    .podium-block::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.05) 0%,transparent 100%);}
+    .podium-1{height:160px;background:linear-gradient(180deg,rgba(245,158,11,0.25),rgba(245,158,11,0.08));border:1px solid rgba(245,158,11,0.5);}
+    .podium-2{height:120px;background:linear-gradient(180deg,rgba(148,163,184,0.2),rgba(148,163,184,0.05));border:1px solid rgba(148,163,184,0.4);}
+    .podium-3{height:90px;background:linear-gradient(180deg,rgba(180,83,9,0.2),rgba(180,83,9,0.05));border:1px solid rgba(180,83,9,0.4);}
+    .podium-amount{font-family:var(--font-title);font-size:clamp(0.9rem,1.6vw,1.3rem);font-weight:900;color:var(--text-1);}
+    .podium-1 .podium-amount{color:var(--gold);text-shadow:0 0 20px var(--gold-glow);}
+    .podium-2 .podium-amount{color:#CBD5E1;}
+    .podium-3 .podium-amount{color:#CD7C39;}
+    .schedule-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+    .schedule-table th{font-family:var(--font-heading);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);padding:10px 20px;text-align:left;}
+    .schedule-table td{padding:14px 20px;font-size:0.9rem;color:var(--text-2);background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .schedule-table td:first-child{border-left:1px solid var(--border);border-radius:10px 0 0 10px;}
+    .schedule-table td:last-child{border-right:1px solid var(--border);border-radius:0 10px 10px 0;}
+    .schedule-table tr:hover td{border-color:rgba(56,189,248,0.4);}
+    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:700;font-family:var(--font-heading);letter-spacing:1px;text-transform:uppercase;}
+    .status-badge.upcoming{background:rgba(56,189,248,0.1);color:var(--cyan);border:1px solid rgba(56,189,248,0.3);}
+    .status-badge.done{background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+    .team-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;transition:all 0.3s ease;cursor:default;}
+    .team-card:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 8px 24px rgba(56,189,248,0.1);}
+    .team-avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--cyan-dim),rgba(168,85,247,0.1));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+    .team-name{font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--text-1);}
+    .team-members{font-size:0.78rem;color:var(--text-3);margin-top:2px;}
+    .team-seed{margin-left:auto;font-family:var(--font-title);font-size:0.7rem;color:var(--text-4);letter-spacing:1px;}
+    .bracket-format-info{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    .format-big-card{background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--border);border-radius:20px;padding:26px;position:relative;overflow:hidden;}
+    .format-big-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--purple));}
+    .format-steps{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+    .format-step{display:flex;align-items:center;gap:12px;padding:9px 13px;background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.12);border-radius:10px;font-size:0.85rem;color:var(--text-2);transition:background 0.3s;}
+    .format-step:hover{background:rgba(56,189,248,0.1);}
+    .step-icon{font-size:1.1rem;flex-shrink:0;}
+    .step-label{font-family:var(--font-heading);font-size:0.82rem;font-weight:700;color:var(--cyan);margin-right:4px;}
+    .nav-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:12px;background:rgba(22,25,35,0.85);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:100px;padding:10px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+    .nav-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s ease;}
+    .nav-btn:hover{border-color:var(--cyan);background:var(--cyan-dim);color:var(--cyan);transform:scale(1.1);}
+    .nav-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+    .nav-btn.bracket-btn{background:linear-gradient(135deg,var(--cyan),#0EA5E9);border-color:var(--cyan);color:#fff;font-size:0.75rem;font-family:var(--font-heading);font-weight:700;letter-spacing:0.5px;width:auto;padding:0 18px;border-radius:100px;white-space:nowrap;box-shadow:0 0 20px var(--cyan-glow);}
+    .nav-btn.bracket-btn:hover{transform:scale(1.05);box-shadow:0 0 30px var(--cyan-glow);}
+    .nav-dots{display:flex;gap:6px;align-items:center;}
+    .nav-dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:all 0.3s ease;}
+    .nav-dot.active{background:var(--cyan);width:22px;border-radius:4px;box-shadow:0 0 8px var(--cyan-glow);}
+    .slide-counter{font-family:var(--font-heading);font-size:12px;color:var(--text-3);letter-spacing:1px;min-width:40px;text-align:center;}
+    .key-hint{position:fixed;top:20px;right:24px;z-index:100;display:flex;gap:6px;opacity:0.5;}
+    .key{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text-3);font-family:var(--font);}
+    .corner-decor{position:absolute;width:100px;height:100px;z-index:1;pointer-events:none;}
+    .corner-decor.tl{top:24px;left:24px;border-top:2px solid rgba(56,189,248,0.25);border-left:2px solid rgba(56,189,248,0.25);border-radius:6px 0 0 0;}
+    .corner-decor.tr{top:24px;right:24px;border-top:2px solid rgba(56,189,248,0.25);border-right:2px solid rgba(56,189,248,0.25);border-radius:0 6px 0 0;}
+    .corner-decor.bl{bottom:80px;left:24px;border-bottom:2px solid rgba(56,189,248,0.25);border-left:2px solid rgba(56,189,248,0.25);border-radius:0 0 0 6px;}
+    .corner-decor.br{bottom:80px;right:24px;border-bottom:2px solid rgba(56,189,248,0.25);border-right:2px solid rgba(56,189,248,0.25);border-radius:0 0 6px 0;}
+    .section-tag-top{position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:10;font-family:var(--font-heading);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text-4);}
+    #slide-2{background:radial-gradient(ellipse 70% 50% at 80% 20%,rgba(168,85,247,0.07) 0%,transparent 60%),var(--bg);}
+    #slide-3{background:radial-gradient(ellipse 70% 60% at 20% 80%,rgba(56,189,248,0.07) 0%,transparent 60%),var(--bg);}
+    #slide-4{background:radial-gradient(ellipse 70% 50% at 80% 60%,rgba(245,158,11,0.07) 0%,transparent 60%),var(--bg);}
+    #slide-5{background:radial-gradient(ellipse 70% 50% at 20% 20%,rgba(16,185,129,0.06) 0%,transparent 60%),var(--bg);}
+    #slide-6{background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(168,85,247,0.07) 0%,transparent 60%),var(--bg);}
+    @media(max-width:900px){.slide{padding:24px 32px;}.cards-grid.col-3{grid-template-columns:1fr 1fr;}.cards-grid.col-4{grid-template-columns:1fr 1fr;}.bracket-format-info{grid-template-columns:1fr;}.podium-block{width:150px;}}
+  </style>
+</head>
+<body>
+<div class="slides-wrapper" id="slidesWrapper">
+  <div class="corner-decor tl"></div>
+  <div class="corner-decor tr"></div>
+  <div class="corner-decor bl"></div>
+  <div class="corner-decor br"></div>
+
+  <!-- SLIDE 1 — Hero -->
+  <section class="slide active" id="slide-1">
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+    <div class="slide-content" style="text-align:center;">
+      <span class="hero-logo">⚔️</span>
+      <h1 class="hero-title">MLBB TOURNAMENT</h1>
+      <p class="hero-sub">Jawa Barat Championship — 2025</p>
+      <div class="divider" style="margin:0 auto 36px;"></div>
+      <div class="hero-badges">
+        <div class="hero-badge"><span>🏆</span> Single Elimination</div>
+        <div class="hero-badge"><span>🎮</span> Mobile Legends: Bang Bang</div>
+        <div class="hero-badge"><span>📍</span> Online / LAN</div>
+        <div class="hero-badge"><span>👥</span> Tim SMA / SMK Se-Jabar</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2 — Aturan Umum -->
+  <section class="slide" id="slide-2">
+    <div class="section-tag-top">SLIDE 02 — PERATURAN</div>
+    <div class="slide-content">
+      <div class="slide-tag"><span class="tag-dot"></span> Regulasi</div>
+      <h2 class="slide-title">Aturan <span class="gold-text">Umum</span></h2>
+      <div class="divider"></div>
+      <ul class="rule-list">
+        <li class="rule-item">
+          <span class="rule-number">01</span>
+          <span class="rule-text">Setiap tim wajib terdaftar secara resmi sebelum turnamen dimulai. <strong>Pendaftaran ditutup H-1</strong> sebelum hari pertandingan.</span>
+        </li>
+        <li class="rule-item">
+          <span class="rule-number">02</span>
+          <span class="rule-text">Setiap tim terdiri dari <strong>5 pemain inti + maksimal 2 pemain cadangan</strong>. Semua pemain harus merupakan siswa aktif sekolah yang bersangkutan.</span>
+        </li>
+        <li class="rule-item">
+          <span class="rule-number">03</span>
+          <span class="rule-text">Pemain wajib menggunakan akun Mobile Legends milik sendiri. <strong>Dilarang menggunakan akun pinjaman.</strong> Minimum rank: Epic.</span>
+        </li>
+        <li class="rule-item">
+          <span class="rule-number">04</span>
+          <span class="rule-text">Pertandingan dimulai tepat waktu sesuai jadwal. Toleransi keterlambatan <strong>maksimal 10 menit</strong> — melebihi batas akan dinyatakan WO.</span>
+        </li>
+        <li class="rule-item">
+          <span class="rule-number">05</span>
+          <span class="rule-text">Segala bentuk kecurangan, boosting, dan penggunaan cheat <strong>berakibat diskualifikasi permanen</strong>. Keputusan panitia bersifat final.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SLIDE 3 — Format Bracket -->
+  <section class="slide" id="slide-3">
+    <div class="section-tag-top">SLIDE 03 — FORMAT</div>
+    <div class="slide-content">
+      <div class="slide-tag"><span class="tag-dot"></span> Sistem Pertandingan</div>
+      <h2 class="slide-title">Format <span class="gold-text">Bracket</span></h2>
+      <div class="divider"></div>
+      <div class="bracket-format-info">
+        <div class="format-big-card">
+          <div class="card-title" style="font-size:1.1rem;margin-bottom:4px;">🏟️ Sistem Eliminasi</div>
+          <div class="card-body" style="margin-bottom:12px;">Turnamen menggunakan sistem <strong style="color:var(--cyan)">Single Elimination</strong> — kalah sekali langsung gugur. Persaingan ketat dari awal!</div>
+          <div class="format-steps">
+            <div class="format-step"><span class="step-icon">🔵</span><span><span class="step-label">16 Besar</span> — Best of 1 (BO1)</span></div>
+            <div class="format-step"><span class="step-icon">🟡</span><span><span class="step-label">8 Besar</span> — Best of 1 (BO1)</span></div>
+            <div class="format-step"><span class="step-icon">🟠</span><span><span class="step-label">Semifinal</span> — Best of 3 (BO3)</span></div>
+            <div class="format-step"><span class="step-icon">🔴</span><span><span class="step-label">Perebutan 3</span> — Best of 1 (BO1)</span></div>
+            <div class="format-step"><span class="step-icon">⭐</span><span><span class="step-label">Grand Final</span> — Best of 5 (BO5)</span></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="format-big-card" style="flex:1;padding:22px;">
+            <div class="card-title" style="margin-bottom:12px;">⚙️ Pengaturan Game</div>
+            <div class="cards-grid col-2" style="gap:10px;">
+              <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;">MODE</div>
+                <div style="font-family:var(--font-heading);font-weight:700;color:var(--cyan);">Classic</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;">DRAFT PICK</div>
+                <div style="font-family:var(--font-heading);font-weight:700;color:var(--cyan);">Wajib</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;">BAN HERO</div>
+                <div style="font-family:var(--font-heading);font-weight:700;color:var(--gold);">6 Per Tim</div>
+              </div>
+              <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;">EMBED</div>
+                <div style="font-family:var(--font-heading);font-weight:700;color:var(--green);">Aktif</div>
+              </div>
+            </div>
+          </div>
+          <div class="format-big-card" style="padding:22px;">
+            <div class="card-title" style="margin-bottom:10px;">🎲 Sistem Coin Toss</div>
+            <div class="card-body">Tim pemenang coin toss berhak memilih posisi (<strong style="color:var(--cyan)">Blue Side / Red Side</strong>) di game pertama. Setiap game berikutnya bergantian.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4 — Hadiah -->
+  <section class="slide" id="slide-4">
+    <div class="section-tag-top">SLIDE 04 — HADIAH</div>
+    <div class="slide-content" style="text-align:center;">
+      <div class="slide-tag" style="justify-content:center;"><span class="tag-dot"></span> Prize Pool</div>
+      <h2 class="slide-title">Total <span class="gold-text">Hadiah</span></h2>
+      <div class="divider" style="margin:0 auto 30px;"></div>
+      <div class="podium">
+        <div class="podium-item">
+          <span class="podium-medal">🥈</span>
+          <span class="podium-prize-label" style="color:#CBD5E1;">Runner-Up</span>
+          <div class="podium-block podium-2">
+            <div><div class="podium-amount">Rp 500.000</div><div style="font-size:0.7rem;color:var(--text-3);margin-top:4px;">+ Medali Perak</div></div>
+          </div>
+        </div>
+        <div class="podium-item">
+          <span class="podium-medal">🥇</span>
+          <span class="podium-prize-label" style="color:var(--gold);">Juara 1</span>
+          <div class="podium-block podium-1">
+            <div><div class="podium-amount">Rp 1.000.000</div><div style="font-size:0.7rem;color:var(--text-3);margin-top:4px;">+ Trofi + Medali Emas</div></div>
+          </div>
+        </div>
+        <div class="podium-item">
+          <span class="podium-medal">🥉</span>
+          <span class="podium-prize-label" style="color:#CD7C39;">Juara 3</span>
+          <div class="podium-block podium-3">
+            <div><div class="podium-amount">Rp 250.000</div><div style="font-size:0.7rem;color:var(--text-3);margin-top:4px;">+ Medali Perunggu</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="cards-grid col-3" style="margin-top:24px;gap:14px;">
+        <div class="card" style="padding:18px;border-radius:12px;text-align:left;">
+          <span class="card-icon">🌟</span>
+          <div class="card-title">MVP Award</div>
+          <div class="card-body">Penghargaan khusus untuk pemain terbaik sepanjang turnamen</div>
+        </div>
+        <div class="card gold-accent" style="padding:18px;border-radius:12px;text-align:left;">
+          <span class="card-icon">📜</span>
+          <div class="card-title">Sertifikat Juara</div>
+          <div class="card-body">Semua peserta mendapatkan e-Sertifikat partisipasi resmi</div>
+        </div>
+        <div class="card purple-accent" style="padding:18px;border-radius:12px;text-align:left;">
+          <span class="card-icon">📸</span>
+          <div class="card-title">Dokumentasi</div>
+          <div class="card-body">Foto & video dokumentasi tim juara oleh panitia</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5 — Jadwal -->
+  <section class="slide" id="slide-5">
+    <div class="section-tag-top">SLIDE 05 — JADWAL</div>
+    <div class="slide-content">
+      <div class="slide-tag"><span class="tag-dot"></span> Timeline</div>
+      <h2 class="slide-title">Jadwal <span class="gold-text">Pertandingan</span></h2>
+      <div class="divider"></div>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Waktu</th>
+            <th>Babak</th>
+            <th>Keterangan</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>-- / -- / 2025</td><td>08.00 WIB</td><td>⚔️ 16 Besar</td><td>Match 1–8 (BO1)</td><td><span class="status-badge upcoming">Upcoming</span></td>
+          </tr>
+          <tr>
+            <td>-- / -- / 2025</td><td>09.30 WIB</td><td>⚔️ 8 Besar</td><td>Match 9–12 (BO1)</td><td><span class="status-badge upcoming">Upcoming</span></td>
+          </tr>
+          <tr>
+            <td>-- / -- / 2025</td><td>11.00 WIB</td><td>🔥 Semifinal</td><td>Match 13–14 (BO3)</td><td><span class="status-badge upcoming">Upcoming</span></td>
+          </tr>
+          <tr>
+            <td>-- / -- / 2025</td><td>13.30 WIB</td><td>🏅 Perebutan Juara 3</td><td>1 Match (BO1)</td><td><span class="status-badge upcoming">Upcoming</span></td>
+          </tr>
+          <tr>
+            <td>-- / -- / 2025</td><td>14.30 WIB</td><td>🏆 Grand Final</td><td>Match Puncak (BO5)</td><td><span class="status-badge upcoming">Upcoming</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px;text-align:center;">
+        <span style="font-size:0.8rem;color:var(--text-3);">⚠️ Jadwal dapat berubah sewaktu-waktu. Panitia akan menginformasikan melalui grup WhatsApp resmi.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6 — Tim Peserta -->
+  <section class="slide" id="slide-6">
+    <div class="section-tag-top">SLIDE 06 — PESERTA</div>
+    <div class="slide-content">
+      <div class="slide-tag"><span class="tag-dot"></span> Daftar Peserta</div>
+      <h2 class="slide-title">Tim <span class="gold-text">Peserta</span></h2>
+      <div class="divider"></div>
+      <div class="cards-grid col-4" style="gap:12px;">
+        <div class="team-card"><div class="team-avatar">🛡️</div><div><div class="team-name">Team Alpha</div><div class="team-members">SMAN 1 Bandung</div></div><div class="team-seed">#1</div></div>
+        <div class="team-card"><div class="team-avatar">⚡</div><div><div class="team-name">Team Beta</div><div class="team-members">SMAN 2 Bogor</div></div><div class="team-seed">#2</div></div>
+        <div class="team-card"><div class="team-avatar">🔥</div><div><div class="team-name">Team Gamma</div><div class="team-members">SMKN 4 Bekasi</div></div><div class="team-seed">#3</div></div>
+        <div class="team-card"><div class="team-avatar">🌊</div><div><div class="team-name">Team Delta</div><div class="team-members">SMAN 5 Depok</div></div><div class="team-seed">#4</div></div>
+        <div class="team-card"><div class="team-avatar">🗡️</div><div><div class="team-name">Team Epsilon</div><div class="team-members">SMAN 3 Cimahi</div></div><div class="team-seed">#5</div></div>
+        <div class="team-card"><div class="team-avatar">🌪️</div><div><div class="team-name">Team Zeta</div><div class="team-members">SMKN 1 Sukabumi</div></div><div class="team-seed">#6</div></div>
+        <div class="team-card"><div class="team-avatar">🏹</div><div><div class="team-name">Team Eta</div><div class="team-members">SMA Muhammadiyah 1</div></div><div class="team-seed">#7</div></div>
+        <div class="team-card"><div class="team-avatar">🔮</div><div><div class="team-name">Team Theta</div><div class="team-members">SMKN 2 Cirebon</div></div><div class="team-seed">#8</div></div>
+      </div>
+      <div style="margin-top:16px;text-align:center;"><span style="font-size:0.8rem;color:var(--text-4);">Tim dan nama peserta bersifat contoh — dapat diperbarui sesuai data aktual</span></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Navigation -->
+<nav class="nav-bar" id="navBar">
+  <button class="nav-btn" id="prevBtn" disabled>&#9664;</button>
+  <div class="nav-dots" id="navDots"></div>
+  <span class="slide-counter" id="slideCounter">1 / 6</span>
+  <button class="nav-btn" id="nextBtn">&#9654;</button>
+  <button class="nav-btn bracket-btn" onclick="window.location.href='index.html'">&#9876; Lihat Bracket</button>
+</nav>
+
+<div class="key-hint">
+  <div class="key">&#8592; &#8594;</div>
+  <div class="key" style="padding:4px 6px;">Navigasi</div>
+</div>
+
+<script>
+  const SLIDE_COUNT = 6;
+  let current = 0;
+  let isAnimating = false;
+  const slides = document.querySelectorAll('.slide');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const counter = document.getElementById('slideCounter');
+  const dotsContainer = document.getElementById('navDots');
+
+  for (let i = 0; i < SLIDE_COUNT; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('data-index', i);
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  function goToSlide(index) {
+    if (isAnimating || index === current || index < 0 || index >= SLIDE_COUNT) return;
+    isAnimating = true;
+    const dir = index > current ? 1 : -1;
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit-left');
+    if (dir < 0) slides[current].style.transform = 'translateX(60px) scale(0.97)';
+    const prev = current;
+    current = index;
+    slides[current].style.transform = dir > 0 ? 'translateX(60px) scale(0.97)' : 'translateX(-60px) scale(0.97)';
+    slides[current].style.opacity = '0';
+    slides[current].style.transition = 'none';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        slides[current].style.transition = '';
+        slides[current].classList.add('active');
+        setTimeout(() => {
+          slides[prev].classList.remove('exit-left');
+          slides[prev].style.transform = '';
+          isAnimating = false;
+        }, 680);
+      });
+    });
+    updateUI();
+  }
+
+  function updateUI() {
+    counter.textContent = (current + 1) + ' / ' + SLIDE_COUNT;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === SLIDE_COUNT - 1;
+    document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  prevBtn.addEventListener('click', () => goToSlide(current - 1));
+  nextBtn.addEventListener('click', () => goToSlide(current + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goToSlide(current + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goToSlide(current - 1);
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { if (diff > 0) goToSlide(current + 1); else goToSlide(current - 1); }
+  });
+
+  updateUI();
+</script>
+</body>
+</html>
