@@ -254,7 +254,7 @@ const CoinShatterEngine = (function() {
         smashClone.remove();
         if (loserAvatarElem) {
           loserAvatarElem.style.transition = 'opacity 0.5s ease';
-          loserAvatarElem.style.opacity = '0.3';
+          loserAvatarElem.style.opacity = '';
         }
       }, 300);
     }, 420);

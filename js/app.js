@@ -46,9 +46,21 @@ function initViewer() {
 }
 
 let _prevWinners = {};
+let _isInitialWinnerLoad = true;
 
 function checkForWinnerSmashAnimations(newMatches) {
   if (typeof CoinShatterEngine === 'undefined') return;
+
+  if (_isInitialWinnerLoad) {
+    // Record existing winners without animating
+    for (const id in newMatches) {
+      if (newMatches[id]) {
+        _prevWinners[id] = newMatches[id].winner || null;
+      }
+    }
+    _isInitialWinnerLoad = false;
+    return;
+  }
 
   for (const id in newMatches) {
     const m = newMatches[id];
@@ -390,47 +402,6 @@ function setupZoomControls() {
     }
     applyZoom();
   });
-
-  document.getElementById('smash-demo-btn')?.addEventListener('click', () => {
-    triggerDemoSmashAnimation();
-  });
-}
-
-function triggerDemoSmashAnimation() {
-  if (typeof CoinShatterEngine === 'undefined') return;
-
-  const cards = document.querySelectorAll('.match-card.clickable');
-  let targetCard = null;
-
-  for (const card of cards) {
-    const winnerSlot = card.querySelector('.team-slot.winner');
-    const loserSlot = card.querySelector('.team-slot.loser');
-    if (winnerSlot && loserSlot) {
-      targetCard = card;
-      break;
-    }
-  }
-
-  if (!targetCard) {
-    for (const card of cards) {
-      const slots = card.querySelectorAll('.team-slot');
-      if (slots.length >= 2) {
-        targetCard = card;
-        break;
-      }
-    }
-  }
-
-  if (targetCard) {
-    const slots = targetCard.querySelectorAll('.team-slot');
-    const winnerSlot = targetCard.querySelector('.team-slot.winner') || slots[0];
-    const loserSlot = targetCard.querySelector('.team-slot.loser') || slots[1];
-
-    const winnerAvatar = winnerSlot ? winnerSlot.querySelector('.team-avatar') : null;
-    const loserAvatar = loserSlot ? loserSlot.querySelector('.team-avatar') : null;
-
-    CoinShatterEngine.triggerSmash(targetCard, winnerAvatar, loserAvatar);
-  }
 }
 
 function applyZoom() {
