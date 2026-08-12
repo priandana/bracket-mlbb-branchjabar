@@ -52,7 +52,6 @@ function checkForWinnerSmashAnimations(newMatches) {
   if (typeof CoinShatterEngine === 'undefined') return;
 
   if (_isInitialWinnerLoad) {
-    // Record existing winners without animating
     for (const id in newMatches) {
       if (newMatches[id]) {
         _prevWinners[id] = newMatches[id].winner || null;
@@ -68,18 +67,11 @@ function checkForWinnerSmashAnimations(newMatches) {
     const currW = m ? m.winner : null;
 
     if (currW && currW !== prevW && m.status === 'done') {
-      setTimeout(() => {
-        const cardElem = document.querySelector(`.match-card[data-match-id="${id}"]`);
-        if (cardElem) {
-          const winnerSlot = cardElem.querySelector('.team-slot.winner');
-          const loserSlot  = cardElem.querySelector('.team-slot.loser');
-          
-          const winnerAvatar = winnerSlot ? winnerSlot.querySelector('.team-avatar') : null;
-          const loserAvatar  = loserSlot ? loserSlot.querySelector('.team-avatar') : null;
-          
-          CoinShatterEngine.triggerSmash(cardElem, winnerAvatar, loserAvatar);
-        }
-      }, 350);
+      if (_activeViewerMatchId === id) {
+        setTimeout(() => {
+          openViewerMatchModal(id);
+        }, 100);
+      }
     }
 
     if (m) {
@@ -508,7 +500,28 @@ function openViewerMatchModal(matchId) {
   `;
 
   document.getElementById('viewer-match-modal').classList.add('show');
+  _activeViewerMatchId = matchId;
+
+  if (isDone && (t1Win || t2Win) && typeof CoinShatterEngine !== 'undefined') {
+    setTimeout(() => {
+      const arenaStage = body.querySelector('.arena-stage');
+      const cards = body.querySelectorAll('.arena-card');
+      if (cards.length >= 2) {
+        const winnerCard = t1Win ? cards[0] : cards[1];
+        const loserCard  = t1Win ? cards[1] : cards[0];
+        
+        const winnerEmblem = winnerCard.querySelector('.arena-emblem');
+        const loserEmblem  = loserCard.querySelector('.arena-emblem');
+        
+        if (winnerEmblem && loserEmblem) {
+          CoinShatterEngine.triggerSmash(arenaStage, winnerEmblem, loserEmblem);
+        }
+      }
+    }, 280);
+  }
 }
+
+let _activeViewerMatchId = null;
 
 function getGameWinnerName(gameWinnerId, matchObj) {
   if (!gameWinnerId) return '<span style="color:var(--text-4)">Belum Dimainkan</span>';
@@ -519,6 +532,7 @@ function getGameWinnerName(gameWinnerId, matchObj) {
 
 function closeViewerMatchModal() {
   document.getElementById('viewer-match-modal')?.classList.remove('show');
+  _activeViewerMatchId = null;
 }
 document.getElementById('vm-close-btn')?.addEventListener('click', closeViewerMatchModal);
 document.getElementById('viewer-match-modal')?.addEventListener('click', (e) => {
