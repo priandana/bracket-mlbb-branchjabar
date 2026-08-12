@@ -518,10 +518,6 @@ function openViewerMatchModal(matchId) {
         ` : ''}
       </div>
     ` : ''}
-
-    <div style="text-align:center;margin-top:16px;">
-      <button id="modal-demo-smash-btn" class="modal-smash-btn">💥 Tes Animasi Smash</button>
-    </div>
   `;
 
   document.getElementById('viewer-match-modal').classList.add('show');
@@ -543,8 +539,6 @@ function openViewerMatchModal(matchId) {
       }
     }
   };
-
-  document.getElementById('modal-demo-smash-btn')?.addEventListener('click', triggerModalSmash);
 
   if (isDone && (t1Win || t2Win) && typeof CoinShatterEngine !== 'undefined') {
     setTimeout(triggerModalSmash, 300);
