@@ -10,7 +10,50 @@ let _matches = {};
 let _meta    = {};
 let _zoomLevel = 1.0;
 
+// ── Live Toast Notification ───────────────────────────
+function showLiveToast(msg, type = 'info', duration = 5000) {
+  const container = document.getElementById('live-toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `live-toast live-toast--${type}`;
+  toast.innerHTML = `<span class="live-toast-msg">${msg}</span><button class="live-toast-close" onclick="this.parentElement.remove()">✕</button>`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, duration);
+}
+
+// ── Countdown Timer Ticker ────────────────────────────
+let _countdownInterval = null;
+function startCountdownTicker() {
+  if (_countdownInterval) return;
+  _countdownInterval = setInterval(() => {
+    document.querySelectorAll('.match-countdown[data-start]').forEach(el => {
+      const startTs = parseInt(el.dataset.start, 10);
+      const now = Date.now();
+      const diff = startTs - now;
+      if (diff <= 0) {
+        el.textContent = '🔴 SEDANG BERLANGSUNG';
+        el.classList.add('live-now');
+        el.removeAttribute('data-start');
+      } else {
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        el.textContent = h > 0
+          ? `⏱ Mulai dalam ${h}j ${String(m).padStart(2,'0')}m`
+          : `⏱ Mulai dalam ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }
+    });
+  }, 1000);
+}
+
 // ── Init ─────────────────────────────────────────────
+let _prevTournamentStatus = null;
+let _isInitialSettingsLoad = true;
+
 function initViewer() {
   setTimeout(hideLoadingSpinner, 4000);
 
@@ -25,6 +68,23 @@ function initViewer() {
       showEmpty();
       return;
     }
+
+    // Champion screen trigger — only when status CHANGES to 'done' while viewer is open
+    if (!_isInitialSettingsLoad && s.status === 'done' && _prevTournamentStatus !== 'done') {
+      setTimeout(() => {
+        const finalMatchId = `r${s.totalRounds}_m1`;
+        const finalMatch = _matches[finalMatchId];
+        if (finalMatch && finalMatch.winner && _teams[finalMatch.winner]) {
+          const champName = _teams[finalMatch.winner].name;
+          const isAdmin = localStorage.getItem('mlbb_admin_active') === 'true';
+          if (typeof ChampionScreen !== 'undefined') {
+            ChampionScreen.show(champName, isAdmin);
+          }
+        }
+      }, 800);
+    }
+    _prevTournamentStatus = s.status;
+    _isInitialSettingsLoad = false;
 
     _meta = { totalRounds: s.totalRounds, bracketSize: s.bracketSize };
     tryRender();
@@ -43,6 +103,7 @@ function initViewer() {
   });
 
   setupZoomControls();
+  startCountdownTicker();
 }
 
 let _prevWinners = {};
@@ -67,6 +128,19 @@ function checkForWinnerSmashAnimations(newMatches) {
     const currW = m ? m.winner : null;
 
     if (currW && currW !== prevW && m.status === 'done') {
+      // Live toast notification
+      const winnerTeam = _teams[currW];
+      const t1 = _teams[m.team1];
+      const t2 = _teams[m.team2];
+      if (winnerTeam && t1 && t2) {
+        const loserTeam = currW === m.team1 ? t2 : t1;
+        showLiveToast(
+          `🏆 <strong>${winnerTeam.name}</strong> mengalahkan ${loserTeam.name} di <em>${m.roundName}</em>!`,
+          'win',
+          6000
+        );
+      }
+
       if (_activeViewerMatchId === id) {
         setTimeout(() => {
           openViewerMatchModal(id);
@@ -243,6 +317,23 @@ function renderMatchCard(m) {
     mapDots += '</div>';
   }
 
+  // Countdown badge
+  let countdownBadge = '';
+  if (!isDone && m.startTime) {
+    const diff = m.startTime - Date.now();
+    if (diff > 0) {
+      const h = Math.floor(diff / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      const label = h > 0
+        ? `⏱ Mulai dalam ${h}j ${String(mins).padStart(2,'0')}m`
+        : `⏱ Mulai dalam ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      countdownBadge = `<div class="match-countdown" data-start="${m.startTime}">${label}</div>`;
+    } else {
+      countdownBadge = `<div class="match-countdown live-now">🔴 SEDANG BERLANGSUNG</div>`;
+    }
+  }
+
   return `
     <div class="${cardCls}" data-match-id="${m.id}">
       ${teamRow(t1, m.team1, t1score, t1Win, t2Win && isDone)}
@@ -252,6 +343,7 @@ function renderMatchCard(m) {
         ${mapDots}
         <span class="click-hint">🔍 Lihat Detail</span>
       </div>
+      ${countdownBadge}
     </div>`;
 }
 

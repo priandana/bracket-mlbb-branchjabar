@@ -387,10 +387,31 @@ function openMatchModal(matchId) {
   document.getElementById('modal-match-format').textContent = m.format;
 
   const body = document.getElementById('modal-body');
+
+  // Build current startTime value for input default
+  let startTimeVal = '';
+  if (m.startTime) {
+    const d = new Date(m.startTime);
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    startTimeVal = `${hh}:${mm}`;
+  }
+
+  const countdownUI = `
+    <div class="admin-countdown-row">
+      <label class="admin-countdown-label">⏱ Set Waktu Mulai Pertandingan</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="time" id="match-start-time-input" class="form-input" style="width:120px;padding:6px 10px;" value="${startTimeVal}" />
+        <button class="btn btn-secondary btn-sm" onclick="setMatchStartTime('${m.id}')">Simpan</button>
+        ${m.startTime ? `<button class="btn btn-secondary btn-sm" style="color:#F87171;border-color:rgba(239,68,68,0.4);" onclick="clearMatchStartTime('${m.id}')">Hapus</button>` : ''}
+      </div>
+    </div>
+  `;
+
   if (m.format === 'BO1') {
-    body.innerHTML = buildBO1UI(m, t1name, t2name);
+    body.innerHTML = countdownUI + buildBO1UI(m, t1name, t2name);
   } else {
-    body.innerHTML = buildBO3UI(m, t1name, t2name);
+    body.innerHTML = countdownUI + buildBO3UI(m, t1name, t2name);
   }
 
   document.getElementById('match-modal').classList.add('show');
@@ -404,6 +425,25 @@ document.getElementById('modal-close-btn')?.addEventListener('click', closeMatch
 document.getElementById('match-modal')?.addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeMatchModal();
 });
+
+async function setMatchStartTime(matchId) {
+  const input = document.getElementById('match-start-time-input');
+  if (!input || !input.value) { toast('Masukkan waktu terlebih dahulu', 'error'); return; }
+  const [hh, mm] = input.value.split(':').map(Number);
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
+  if (target.getTime() < Date.now()) target.setDate(target.getDate() + 1);
+  await db.ref(`${ROOT}/matches/${matchId}/startTime`).set(target.getTime());
+  toast('Waktu mulai berhasil disimpan!', 'success');
+  closeMatchModal();
+}
+
+async function clearMatchStartTime(matchId) {
+  await db.ref(`${ROOT}/matches/${matchId}/startTime`).remove();
+  toast('Waktu mulai dihapus', 'info');
+  closeMatchModal();
+}
+
 
 // ── BO1 UI ────────────────────────────────────────────
 function buildBO1UI(m, t1name, t2name) {
