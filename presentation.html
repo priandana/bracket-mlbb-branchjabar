@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
@@ -381,20 +381,25 @@
     if (isAnimating || index === current || index < 0 || index >= SLIDE_COUNT) return;
     isAnimating = true;
     const dir = index > current ? 1 : -1;
-    slides[current].classList.remove('active');
-    slides[current].classList.add('exit-left');
-    if (dir < 0) slides[current].style.transform = 'translateX(60px) scale(0.97)';
     const prev = current;
     current = index;
-    slides[current].style.transform = dir > 0 ? 'translateX(60px) scale(0.97)' : 'translateX(-60px) scale(0.97)';
-    slides[current].style.opacity = '0';
+
+    // Set entering slide starting position (no transition yet)
     slides[current].style.transition = 'none';
+    slides[current].style.transform = dir > 0 ? 'translateX(60px) scale(0.97)' : 'translateX(-60px) scale(0.97)';
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        // Re-enable transitions, clear inline styles so CSS .active takes over
         slides[current].style.transition = '';
+        slides[current].style.transform = '';
         slides[current].classList.add('active');
+
+        // Animate previous slide out
+        slides[prev].classList.remove('active');
+        slides[prev].style.transform = dir > 0 ? 'translateX(-60px) scale(0.97)' : 'translateX(60px) scale(0.97)';
+
         setTimeout(() => {
-          slides[prev].classList.remove('exit-left');
           slides[prev].style.transform = '';
           isAnimating = false;
         }, 680);
