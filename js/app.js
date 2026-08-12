@@ -480,7 +480,7 @@ function openViewerMatchModal(matchId) {
         <div class="arena-emblem">${getInitials(t1)}</div>
         <span class="arena-seed">#${t1Seed}</span>
         <div class="arena-name">${esc(t1)}</div>
-        ${t1Win ? '<div class="victory-banner">🏆 WINNER</div>' : ''}
+        ${t1Win ? '<div class="esports-victory-ribbon">🏆 WINNER</div>' : ''}
       </div>
 
       <div class="arena-vs-shield">
@@ -492,7 +492,7 @@ function openViewerMatchModal(matchId) {
         <div class="arena-emblem">${getInitials(t2)}</div>
         <span class="arena-seed">#${t2Seed}</span>
         <div class="arena-name">${esc(t2)}</div>
-        ${t2Win ? '<div class="victory-banner">🏆 WINNER</div>' : ''}
+        ${t2Win ? '<div class="esports-victory-ribbon">🏆 WINNER</div>' : ''}
       </div>
     </div>
 

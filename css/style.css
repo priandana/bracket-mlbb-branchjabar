@@ -1122,4 +1122,52 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 0 25px rgba(239, 68, 68, 0.7);
 }
 
+/* Impact Flash Screen Overlay */
+.impact-flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.85) 0%, rgba(245, 158, 11, 0.4) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 10005;
+  animation: flash-fade 0.12s ease-out forwards;
+}
+
+@keyframes flash-fade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Defeated Card Smoked-Out State */
+.arena-card.defeated-smoked-out {
+  filter: grayscale(80%) brightness(0.6);
+  opacity: 0.45;
+  border-color: rgba(239, 68, 68, 0.3);
+  transition: all 0.5s ease;
+}
+
+/* 3D Esports Victory Ribbon Badge */
+.esports-victory-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #FFF;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 100px;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+  margin-top: 8px;
+  animation: ribbon-glow 2s infinite ease-in-out;
+}
+
+@keyframes ribbon-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
+  50% { box-shadow: 0 0 24px rgba(245, 158, 11, 0.9), 0 0 10px rgba(239, 68, 68, 0.7); }
+}
+
+
 

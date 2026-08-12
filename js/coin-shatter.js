@@ -1,6 +1,6 @@
 // =====================================================
-// COIN SHATTER & VICTORY SMASH ENGINE — coin-shatter.js
-// Dynamic canvas particle physics & smash animation for bracket
+// COIN SHATTER & CINEMATIC VICTORY SMASH ENGINE — coin-shatter.js
+// Dynamic canvas particle physics & cinematic impact FX
 // =====================================================
 
 const CoinShatterEngine = (function() {
@@ -24,27 +24,27 @@ const CoinShatterEngine = (function() {
 
       const now = audioCtx.currentTime;
 
-      // 1. Bass boom oscillator
+      // 1. Heavy Sub-Bass Impact Boom
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.exponentialRampToValueAtTime(30, now + 0.35);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(25, now + 0.45);
 
-      gain.gain.setValueAtTime(1.0, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+      gain.gain.setValueAtTime(1.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
 
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start(now);
-      osc.stop(now + 0.35);
+      osc.stop(now + 0.45);
 
-      // 2. High glass/metal shatter noise
-      const bufferSize = audioCtx.sampleRate * 0.25;
+      // 2. High Glass & Metallic Shatter Noise
+      const bufferSize = audioCtx.sampleRate * 0.3;
       const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.18));
       }
 
       const whiteNoise = audioCtx.createBufferSource();
@@ -52,11 +52,11 @@ const CoinShatterEngine = (function() {
 
       const filter = audioCtx.createBiquadFilter();
       filter.type = 'highpass';
-      filter.frequency.setValueAtTime(1200, now);
+      filter.frequency.setValueAtTime(1500, now);
 
       const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.8, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+      noiseGain.gain.setValueAtTime(0.9, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
 
       whiteNoise.connect(filter);
       filter.connect(noiseGain);
@@ -86,51 +86,76 @@ const CoinShatterEngine = (function() {
     canvas.height = window.innerHeight;
   }
 
-  function createShatterParticles(x, y, bgGradientColors) {
-    const numFragments = 18;
+  function createFissureAndShatterParticles(x, y) {
+    const numFragments = 22;
 
-    // Triangular fragments of the coin
+    // Glowing Molten Gold + Obsidian Stone Fragments
+    const obsidianColors = ['#0F172A', '#1E293B', '#334155'];
+    const moltenColors = ['#F59E0B', '#FBBF24', '#EF4444', '#F97316'];
+
     for (let i = 0; i < numFragments; i++) {
-      const angle = (i / numFragments) * Math.PI * 2 + (Math.random() * 0.2);
-      const speed = 4 + Math.random() * 9;
+      const angle = (i / numFragments) * Math.PI * 2 + (Math.random() * 0.25);
+      const speed = 5 + Math.random() * 11;
       const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed - (Math.random() * 3 + 2); // slight upwards velocity
+      const vy = Math.sin(angle) * speed - (Math.random() * 4 + 2);
+
+      const isMolten = Math.random() > 0.4;
+      const colorArr = isMolten ? moltenColors : obsidianColors;
 
       particles.push({
         type: 'fragment',
-        x: x + (Math.random() * 10 - 5),
-        y: y + (Math.random() * 10 - 5),
+        x: x + (Math.random() * 12 - 6),
+        y: y + (Math.random() * 12 - 6),
         vx: vx,
         vy: vy,
         rotation: Math.random() * Math.PI * 2,
-        vRot: (Math.random() - 0.5) * 0.4,
-        size: Math.random() * 8 + 6,
-        color: bgGradientColors[i % bgGradientColors.length] || '#EF4444',
+        vRot: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 9 + 6,
+        color: colorArr[Math.floor(Math.random() * colorArr.length)],
+        isMolten: isMolten,
         alpha: 1,
         life: 1.0,
         decay: Math.random() * 0.02 + 0.015,
-        gravity: 0.35
+        gravity: 0.38
       });
     }
 
-    // Sparkles & golden embers burst
-    const numSparks = 35;
+    // Sparks & Energy Embers
+    const numSparks = 40;
     const sparkColors = ['#F59E0B', '#38BDF8', '#FBBF24', '#FFFFFF', '#EF4444'];
     for (let i = 0; i < numSparks; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 12;
+      const speed = 3 + Math.random() * 14;
       particles.push({
         type: 'spark',
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        size: Math.random() * 3 + 2,
+        size: Math.random() * 3.5 + 2,
         color: sparkColors[Math.floor(Math.random() * sparkColors.length)],
         alpha: 1,
         life: 1.0,
-        decay: Math.random() * 0.03 + 0.02,
-        gravity: 0.1
+        decay: Math.random() * 0.035 + 0.02,
+        gravity: 0.12
+      });
+    }
+
+    // Smoke embers trailing up
+    const numSmoke = 15;
+    for (let i = 0; i < numSmoke; i++) {
+      particles.push({
+        type: 'smoke',
+        x: x + (Math.random() * 20 - 10),
+        y: y + (Math.random() * 20 - 10),
+        vx: (Math.random() - 0.5) * 2,
+        vy: -Math.random() * 3 - 1,
+        size: Math.random() * 14 + 10,
+        color: '#475569',
+        alpha: 0.5,
+        life: 1.0,
+        decay: Math.random() * 0.02 + 0.01,
+        gravity: -0.05
       });
     }
 
@@ -164,20 +189,30 @@ const CoinShatterEngine = (function() {
         ctx.translate(p.x, p.y);
         ctx.rotate(p.rotation);
         ctx.fillStyle = p.color;
-        ctx.shadowColor = '#000';
-        ctx.shadowBlur = 4;
 
-        // Draw an irregular polygon fragment
+        if (p.isMolten) {
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 10;
+        } else {
+          ctx.shadowColor = '#000';
+          ctx.shadowBlur = 4;
+        }
+
         ctx.beginPath();
         ctx.moveTo(0, -p.size);
-        ctx.lineTo(p.size * 0.8, p.size * 0.8);
-        ctx.lineTo(-p.size * 0.8, p.size * 0.6);
+        ctx.lineTo(p.size * 0.85, p.size * 0.85);
+        ctx.lineTo(-p.size * 0.85, p.size * 0.65);
         ctx.closePath();
         ctx.fill();
       } else if (p.type === 'spark') {
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.type === 'smoke') {
+        ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
@@ -194,77 +229,91 @@ const CoinShatterEngine = (function() {
     }
   }
 
-  function triggerSmash(matchCardElem, winnerAvatarElem, loserAvatarElem) {
+  function triggerSmash(containerElem, winnerAvatarElem, loserAvatarElem) {
     if (!canvas) initCanvas();
     playImpactSFX();
 
     if (!winnerAvatarElem || !loserAvatarElem) {
-      if (matchCardElem) triggerCardShake(matchCardElem);
+      if (containerElem) triggerContainerShake(containerElem);
       return;
     }
 
     const winnerRect = winnerAvatarElem.getBoundingClientRect();
     const loserRect = loserAvatarElem.getBoundingClientRect();
 
-    // Coordinates relative to viewport
     const wX = winnerRect.left + winnerRect.width / 2;
     const wY = winnerRect.top + winnerRect.height / 2;
     const lX = loserRect.left + loserRect.width / 2;
     const lY = loserRect.top + loserRect.height / 2;
 
-    // Create flying Smash clone of the Winner Avatar
+    // Flying Smash clone of Winner Emblem
     const smashClone = winnerAvatarElem.cloneNode(true);
     smashClone.classList.add('smash-flying-coin');
     smashClone.style.left = `${wX - winnerRect.width / 2}px`;
     smashClone.style.top = `${wY - winnerRect.height / 2}px`;
+    smashClone.style.width = `${winnerRect.width}px`;
+    smashClone.style.height = `${winnerRect.height}px`;
     document.body.appendChild(smashClone);
 
-    // Hide original loser avatar temporarily during shatter
+    // Hide original loser avatar temporarily
     loserAvatarElem.style.opacity = '0';
 
-    // Animate Winner Smash motion towards Loser position
     const deltaX = lX - wX;
     const deltaY = lY - wY;
 
     // Force reflow
     smashClone.getBoundingClientRect();
 
-    // Keyframe move
-    smashClone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.4) rotate(360deg)`;
-    smashClone.style.transition = 'transform 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3)';
+    // Phase 1: High speed leap towards Loser
+    smashClone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.55) rotate(360deg)`;
+    smashClone.style.transition = 'transform 0.42s cubic-bezier(0.15, 0.9, 0.25, 1.25)';
 
-    // Trigger shatter on impact
+    // Phase 2: Fissure Cracks & Impact Flash on collision
     setTimeout(() => {
-      // Create shatter explosion at loser's position
-      createShatterParticles(lX, lY, ['#EF4444', '#DC2626', '#991B1B', '#F59E0B', '#1E293B']);
+      // Impact Flash
+      createImpactFlash();
 
-      // Shake match card
-      if (matchCardElem) triggerCardShake(matchCardElem);
+      // Fissure shatter explosion
+      createFissureAndShatterParticles(lX, lY);
 
-      // Add shockwave ring over impact site
+      // Modal container shake & punch
+      if (containerElem) triggerContainerShake(containerElem);
+
+      // Shockwave ring
       createShockwave(lX, lY);
 
-      // Add victory floating badge above match card
-      if (matchCardElem) showVictoryBadge(matchCardElem);
+      // Apply defeated smoked-out style to loser card
+      const loserCard = loserAvatarElem.closest('.arena-card');
+      if (loserCard) {
+        loserCard.classList.add('defeated-smoked-out');
+      }
 
-      // Remove flying clone smoothly
+      // Smoothly remove flying clone
       smashClone.style.opacity = '0';
       smashClone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.0)`;
       setTimeout(() => {
         smashClone.remove();
         if (loserAvatarElem) {
-          loserAvatarElem.style.transition = 'opacity 0.5s ease';
-          loserAvatarElem.style.opacity = '';
+          loserAvatarElem.style.transition = 'opacity 0.4s ease';
+          loserAvatarElem.style.opacity = '0.3';
         }
       }, 300);
     }, 420);
   }
 
-  function triggerCardShake(cardElem) {
-    cardElem.classList.add('match-card-shake');
+  function triggerContainerShake(elem) {
+    const card = elem.closest('.modal') || elem;
+    card.classList.add('match-card-shake');
     setTimeout(() => {
-      cardElem.classList.remove('match-card-shake');
-    }, 600);
+      card.classList.remove('match-card-shake');
+    }, 550);
+  }
+
+  function createImpactFlash() {
+    const flash = document.createElement('div');
+    flash.className = 'impact-flash-overlay';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 120);
   }
 
   function createShockwave(x, y) {
@@ -274,23 +323,6 @@ const CoinShatterEngine = (function() {
     ring.style.top = `${y}px`;
     document.body.appendChild(ring);
     setTimeout(() => ring.remove(), 600);
-  }
-
-  function showVictoryBadge(cardElem) {
-    const cardRect = cardElem.getBoundingClientRect();
-    const badge = document.createElement('div');
-    badge.className = 'victory-smash-banner';
-    badge.innerHTML = '⚡ VICTORY!';
-    badge.style.left = `${cardRect.left + cardRect.width / 2}px`;
-    badge.style.top = `${cardRect.top - 20}px`;
-    document.body.appendChild(badge);
-
-    setTimeout(() => {
-      badge.style.opacity = '0';
-      badge.style.transform = 'translate(-50%, -25px) scale(0.9)';
-      badge.style.transition = 'all 0.4s ease';
-      setTimeout(() => badge.remove(), 400);
-    }, 1400);
   }
 
   return {
