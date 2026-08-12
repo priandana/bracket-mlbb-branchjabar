@@ -36,11 +36,44 @@ function initViewer() {
   });
 
   db.ref(`${ROOT}/matches`).on('value', snap => {
-    _matches = snap.val() || {};
+    const newMatches = snap.val() || {};
+    checkForWinnerSmashAnimations(newMatches);
+    _matches = newMatches;
     tryRender();
   });
 
   setupZoomControls();
+}
+
+let _prevWinners = {};
+
+function checkForWinnerSmashAnimations(newMatches) {
+  if (typeof CoinShatterEngine === 'undefined') return;
+
+  for (const id in newMatches) {
+    const m = newMatches[id];
+    const prevW = _prevWinners[id];
+    const currW = m ? m.winner : null;
+
+    if (currW && currW !== prevW && m.status === 'done') {
+      setTimeout(() => {
+        const cardElem = document.querySelector(`.match-card[data-match-id="${id}"]`);
+        if (cardElem) {
+          const winnerSlot = cardElem.querySelector('.team-slot.winner');
+          const loserSlot  = cardElem.querySelector('.team-slot.loser');
+          
+          const winnerAvatar = winnerSlot ? winnerSlot.querySelector('.team-avatar') : null;
+          const loserAvatar  = loserSlot ? loserSlot.querySelector('.team-avatar') : null;
+          
+          CoinShatterEngine.triggerSmash(cardElem, winnerAvatar, loserAvatar);
+        }
+      }, 350);
+    }
+
+    if (m) {
+      _prevWinners[id] = m.winner || null;
+    }
+  }
 }
 
 function hideLoadingSpinner() {
@@ -357,6 +390,47 @@ function setupZoomControls() {
     }
     applyZoom();
   });
+
+  document.getElementById('smash-demo-btn')?.addEventListener('click', () => {
+    triggerDemoSmashAnimation();
+  });
+}
+
+function triggerDemoSmashAnimation() {
+  if (typeof CoinShatterEngine === 'undefined') return;
+
+  const cards = document.querySelectorAll('.match-card.clickable');
+  let targetCard = null;
+
+  for (const card of cards) {
+    const winnerSlot = card.querySelector('.team-slot.winner');
+    const loserSlot = card.querySelector('.team-slot.loser');
+    if (winnerSlot && loserSlot) {
+      targetCard = card;
+      break;
+    }
+  }
+
+  if (!targetCard) {
+    for (const card of cards) {
+      const slots = card.querySelectorAll('.team-slot');
+      if (slots.length >= 2) {
+        targetCard = card;
+        break;
+      }
+    }
+  }
+
+  if (targetCard) {
+    const slots = targetCard.querySelectorAll('.team-slot');
+    const winnerSlot = targetCard.querySelector('.team-slot.winner') || slots[0];
+    const loserSlot = targetCard.querySelector('.team-slot.loser') || slots[1];
+
+    const winnerAvatar = winnerSlot ? winnerSlot.querySelector('.team-avatar') : null;
+    const loserAvatar = loserSlot ? loserSlot.querySelector('.team-avatar') : null;
+
+    CoinShatterEngine.triggerSmash(targetCard, winnerAvatar, loserAvatar);
+  }
 }
 
 function applyZoom() {
