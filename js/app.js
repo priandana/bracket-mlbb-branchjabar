@@ -549,7 +549,7 @@ function openViewerMatchModal(matchId) {
   document.getElementById('vm-format').textContent = m.format;
   const vmDateEl = document.getElementById('vm-date');
   if (vmDateEl) {
-    const tot = _settings.totalRounds || 4;
+    const tot = (_meta && _meta.totalRounds) || 4;
     vmDateEl.textContent = m.roundDate || getRoundDate(m.round, tot);
   }
 
