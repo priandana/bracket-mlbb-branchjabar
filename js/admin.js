@@ -142,17 +142,17 @@ function buildTeamInputs(count, existingNames, existingRosters = {}) {
   grid.innerHTML = '';
 
   const rosterOptionsHTML = `
-    <option value="auto">Auto (Sesuai Nomot Tim)</option>
-    <option value="team_1">Tim 1 — Bandung 1 (BabyEL)</option>
-    <option value="team_2">Tim 2 — Dispatcher & Driver (Rancatan)</option>
-    <option value="team_3">Tim 3 — Picker (RISAM)</option>
-    <option value="team_4">Tim 4 — Sorter & Runner (AH MALES JAGO)</option>
-    <option value="team_5">Tim 5 — Outbound, Helper & Loader (Ethereal)</option>
-    <option value="team_6">Tim 6 — Shift Leader, Admin (AgusMDN)</option>
-    <option value="team_7">Tim 7 — Inbound & Return ([GS] Smoke_Weed)</option>
-    <option value="team_8">Tim 8 — Leader, Admin, Retur (Jarrr)</option>
-    <option value="team_9">Tim 9 — Outbound & Picker (KiiLuA)</option>
-    <option value="team_10">Tim 10 — TOC & Driver (WarlordCalamity)</option>
+    <option value="auto">Auto (Sesuai Nama Tim)</option>
+    <option value="team_1">Tim 1 — TUAN MUDA (BabyEL dkk)</option>
+    <option value="team_2">Tim 2 — TIM 2 (Rancatan Potong dkk)</option>
+    <option value="team_3">Tim 3 — GodPlant (RISAM dkk)</option>
+    <option value="team_4">Tim 4 — TIM 4 (AH MALES JAGO dkk)</option>
+    <option value="team_5">Tim 5 — Iron Fangs (Ethereal dkk)</option>
+    <option value="team_6">Tim 6 — ALAMI (AgusMDN, SteveAngelow dkk)</option>
+    <option value="team_7">Tim 7 — LAST BREATH ([GS] Smoke_Weed dkk)</option>
+    <option value="team_8">Tim 8 — ESCOBAR (Jarrr, maaaamski dkk)</option>
+    <option value="team_9">Tim 9 — NOKTURNAL (KiiLuA dkk)</option>
+    <option value="team_10">Tim 10 — NO MERCY (WarlordCalamity dkk)</option>
   `;
 
   for (let i = 1; i <= count; i++) {
