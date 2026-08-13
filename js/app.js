@@ -515,17 +515,26 @@ function applyZoom() {
 
 // ── CLEAN & ELEGANT MATCH DETAIL MODAL ────────────────
 function attachCardClickHandlers() {
-  document.querySelectorAll('.match-card.clickable').forEach(card => {
-    card.addEventListener('click', () => {
+  const root = document.getElementById('bracket-root');
+  if (!root) return;
+  
+  // Re-bind direct click handlers to clickable match cards
+  root.querySelectorAll('.match-card.clickable').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.onclick = (e) => {
+      e.stopPropagation();
       const matchId = card.dataset.matchId;
       if (matchId) openViewerMatchModal(matchId);
-    });
+    };
   });
 }
 
 function openViewerMatchModal(matchId) {
   const m = _matches[matchId];
   if (!m) return;
+
+  // Close break overlay if open so spectator detail modal is front & center
+  closeBreakOverlay();
 
   const t1 = m.team1 ? (_teams[m.team1]?.name || 'TBD') : 'TBD';
   const t2 = m.team2 ? (_teams[m.team2]?.name || 'TBD') : 'TBD';
@@ -868,6 +877,14 @@ document.getElementById('break-overlay')?.addEventListener('click', (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   initViewer();
+
+  // Global click delegation for match cards to guarantee detail modal opens
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.match-card.clickable');
+    if (card && card.dataset.matchId) {
+      openViewerMatchModal(card.dataset.matchId);
+    }
+  });
 
   // Listen to Firebase breakState for live sync across all viewers
   db.ref(`${ROOT}/settings/breakState`).on('value', snap => {
