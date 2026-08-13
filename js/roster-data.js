@@ -80,7 +80,8 @@ const ROSTER_DATA = {
       { name: "Dael Sahepurohim", nickname: "Kentut Berdahak", division: "Senior Staff", role: "JUNGLER" },
       { name: "Ahmad Wahid Burhani", nickname: "Ahmad Wahid Burhani", division: "Retur", role: "GOLD LANER" },
       { name: "Muhammad Rizky muttaqin", nickname: "Ki jokobodo", division: "Retur", role: "MID LANER" },
-      { name: "Ridwan Nurjaman", nickname: "Osmin™", division: "Admin", role: "ROAMER" }
+      { name: "Ridwan Nurjaman", nickname: "Osmin™", division: "Admin", role: "ROAMER" },
+      { name: "Priandana Mangaraja Lubis", nickname: "Jinxy", division: "Leader", role: "JUNGLER / MID LANER" }
     ]
   },
   team_8: {
