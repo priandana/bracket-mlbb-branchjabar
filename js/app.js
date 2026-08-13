@@ -736,8 +736,148 @@ function applyTheme(theme) {
   localStorage.setItem('mlbb_theme', theme);
 }
 
+// ── Next Match Overview & Intermission Overlay ─────────
+let _breakCountdownInterval = null;
+
+function renderRosterCardsHTML(teamId, teamName, isBlueSide) {
+  const rosterData = typeof getTeamRoster === 'function' ? getTeamRoster(teamId, teamName) : null;
+  const sideClass  = isBlueSide ? 'blue-side' : 'red-side';
+  const emblemText = isBlueSide ? '🟦' : '🟥';
+  const displayName = teamName || 'TBD';
+
+  let playersHTML = '';
+  if (rosterData && rosterData.players && rosterData.players.length > 0) {
+    playersHTML = rosterData.players.map(p => {
+      const roleCls = (p.role || '').toLowerCase().replace(/[^a-z]/g, '');
+      return `
+        <div class="roster-item">
+          <div class="roster-player-info">
+            <span class="roster-nick">${esc(p.nickname || p.name)}</span>
+            <span class="roster-real">${esc(p.name)} (${esc(p.division)})</span>
+          </div>
+          <span class="role-badge r-${roleCls}">${esc(p.role)}</span>
+        </div>`;
+    }).join('');
+  } else {
+    playersHTML = `
+      <div style="padding:16px;text-align:center;color:var(--text-3);font-size:0.84rem;">
+        Roster pemain akan segera diumumkan
+      </div>`;
+  }
+
+  return `
+    <div class="break-team-card ${sideClass}">
+      <div class="break-team-header">
+        <div class="break-team-emblem">${emblemText}</div>
+        <div class="break-team-name">${esc(displayName)}</div>
+      </div>
+      <div class="roster-list">
+        ${playersHTML}
+      </div>
+    </div>`;
+}
+
+function getNextPendingMatch() {
+  const matchesArr = Object.values(_matches);
+  if (!matchesArr.length) return null;
+  matchesArr.sort((a, b) => a.round - b.round || a.position - b.position);
+  return matchesArr.find(m => m.status === 'pending' && !m.isBye && (m.team1 || m.team2)) || matchesArr.find(m => m.status === 'pending' && !m.isBye) || matchesArr[0];
+}
+
+function renderNextMatchOverview(matchId, endTimeMs) {
+  let targetMatch = matchId ? _matches[matchId] : null;
+  if (!targetMatch) {
+    targetMatch = getNextPendingMatch();
+  }
+
+  const roundTitle = targetMatch ? targetMatch.roundName.toUpperCase() : 'ROUND OF 16';
+  const rDate = targetMatch ? (targetMatch.roundDate || getRoundDate(targetMatch.round, _meta.totalRounds || 4)) : '13 AGUSTUS 2026';
+  const fmt = targetMatch ? targetMatch.format : 'BO1';
+
+  document.getElementById('bo-round-title').textContent = roundTitle;
+  document.getElementById('bo-match-sub').textContent = `MATCH ${targetMatch ? targetMatch.id : ''} • ${fmt} • ${rDate.toUpperCase()}`;
+
+  const t1Name = targetMatch && targetMatch.team1 ? (_teams[targetMatch.team1]?.name || 'TBD') : 'TBD';
+  const t2Name = targetMatch && targetMatch.team2 ? (_teams[targetMatch.team2]?.name || 'TBD') : 'TBD';
+  const t1Id   = targetMatch ? targetMatch.team1 : null;
+  const t2Id   = targetMatch ? targetMatch.team2 : null;
+
+  const t1HTML = renderRosterCardsHTML(t1Id, t1Name, true);
+  const t2HTML = renderRosterCardsHTML(t2Id, t2Name, false);
+
+  const arenaHTML = `
+    <div class="break-arena-grid">
+      ${t1HTML}
+      <div class="break-vs-center">
+        <div class="break-vs-shield">VS</div>
+        <div class="break-timer-box">
+          <div class="timer-val" id="bo-timer-display">READY</div>
+          <div class="timer-lbl">COUNTDOWN MATCH</div>
+        </div>
+      </div>
+      ${t2HTML}
+    </div>`;
+
+  const contentEl = document.getElementById('bo-arena-content');
+  if (contentEl) contentEl.innerHTML = arenaHTML;
+  startBreakCountdown(endTimeMs);
+}
+
+function startBreakCountdown(endTimeMs) {
+  if (_breakCountdownInterval) clearInterval(_breakCountdownInterval);
+
+  const timerEl = document.getElementById('bo-timer-display');
+  if (!timerEl) return;
+
+  if (!endTimeMs) {
+    timerEl.textContent = 'READY';
+    return;
+  }
+
+  function update() {
+    const remaining = Math.max(0, Math.floor((endTimeMs - Date.now()) / 1000));
+    const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const ss = String(remaining % 60).padStart(2, '0');
+    timerEl.textContent = `${mm}:${ss}`;
+
+    if (remaining <= 0) {
+      clearInterval(_breakCountdownInterval);
+      timerEl.textContent = '00:00';
+    }
+  }
+
+  update();
+  _breakCountdownInterval = setInterval(update, 1000);
+}
+
+function openBreakOverlay(matchId, endTimeMs) {
+  renderNextMatchOverview(matchId, endTimeMs);
+  document.getElementById('break-overlay')?.classList.add('show');
+}
+
+function closeBreakOverlay() {
+  document.getElementById('break-overlay')?.classList.remove('show');
+  if (_breakCountdownInterval) clearInterval(_breakCountdownInterval);
+}
+
+document.getElementById('open-break-btn')?.addEventListener('click', () => openBreakOverlay());
+document.getElementById('break-close-btn')?.addEventListener('click', closeBreakOverlay);
+document.getElementById('break-overlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeBreakOverlay();
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   initViewer();
+
+  // Listen to Firebase breakState for live sync across all viewers
+  db.ref(`${ROOT}/settings/breakState`).on('value', snap => {
+    const bs = snap.val();
+    if (bs && bs.active) {
+      openBreakOverlay(bs.matchId, bs.endTimeMs);
+    } else {
+      closeBreakOverlay();
+    }
+  });
 
   // Apply saved theme on load
   const savedTheme = localStorage.getItem('mlbb_theme') || 'dark';

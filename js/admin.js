@@ -85,13 +85,16 @@ function initAdminListeners() {
   db.ref(`${ROOT}/settings`).on('value', snap => {
     _settings = snap.val() || {};
     populateSetupForm();
+    if (_settings.breakState) updateBreakStatusBadge(_settings.breakState);
   });
   db.ref(`${ROOT}/teams`).on('value', snap => {
     _teams = snap.val() || {};
+    updateBreakSelectDropdown();
   });
   db.ref(`${ROOT}/matches`).on('value', snap => {
     _matches = snap.val() || {};
     loadMatchesTab();
+    updateBreakSelectDropdown();
   });
 }
 
@@ -627,7 +630,6 @@ document.getElementById('change-pw-form')?.addEventListener('submit', async (e) 
   toast('Password berhasil diubah!', 'success');
   e.target.reset();
 });
-
 // ── Logout ────────────────────────────────────────────
 document.getElementById('logout-btn')?.addEventListener('click', () => {
   if (!confirm('Keluar dari panel admin?')) return;
@@ -636,6 +638,68 @@ document.getElementById('logout-btn')?.addEventListener('click', () => {
   document.getElementById('admin-layout').classList.remove('show');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-pw').value = '';
+});
+
+// ── INTERMISSION / BREAK MODE CONTROLS ─────────────────
+function updateBreakSelectDropdown() {
+  const select = document.getElementById('break-match-select');
+  if (!select) return;
+
+  const matchesArr = Object.values(_matches);
+  matchesArr.sort((a, b) => a.round - b.round || a.position - b.position);
+
+  let optsHTML = '<option value="auto">Auto (Match Pending Pertama)</option>';
+  matchesArr.forEach(m => {
+    if (!m.isBye) {
+      const t1 = m.team1 ? (_teams[m.team1]?.name || 'TBD') : 'TBD';
+      const t2 = m.team2 ? (_teams[m.team2]?.name || 'TBD') : 'TBD';
+      const st = m.status === 'done' ? ' [Selesai]' : '';
+      optsHTML += `<option value="${m.id}">${m.roundName} - ${t1} VS ${t2}${st}</option>`;
+    }
+  });
+  select.innerHTML = optsHTML;
+}
+
+function updateBreakStatusBadge(bs) {
+  const badge = document.getElementById('break-status-badge');
+  if (!badge) return;
+  if (bs && bs.active) {
+    badge.className = 'status-pill done';
+    badge.textContent = 'Status: ON (TAMPIL)';
+  } else {
+    badge.className = 'status-pill pending';
+    badge.textContent = 'Status: OFF';
+  }
+}
+
+document.getElementById('toggle-break-btn')?.addEventListener('click', async () => {
+  const matchIdVal = document.getElementById('break-match-select')?.value || 'auto';
+  let targetMatchId = matchIdVal;
+
+  if (matchIdVal === 'auto') {
+    const matchesArr = Object.values(_matches);
+    matchesArr.sort((a, b) => a.round - b.round || a.position - b.position);
+    const firstPending = matchesArr.find(m => m.status === 'pending' && !m.isBye) || matchesArr[0];
+    targetMatchId = firstPending ? firstPending.id : null;
+  }
+
+  const mins = parseInt(document.getElementById('break-timer-input')?.value || '5');
+  const endTimeMs = Date.now() + (mins * 60 * 1000);
+
+  await db.ref(`${ROOT}/settings/breakState`).set({
+    active: true,
+    matchId: targetMatchId,
+    endTimeMs: endTimeMs
+  });
+
+  toast('Layar Break diaktifkan!', 'success');
+});
+
+document.getElementById('hide-break-btn')?.addEventListener('click', async () => {
+  await db.ref(`${ROOT}/settings/breakState`).set({
+    active: false
+  });
+  toast('Layar Break ditutup', 'info');
 });
 
 // ── DOMContentLoaded ──────────────────────────────────

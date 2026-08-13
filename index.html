@@ -23,6 +23,9 @@
       <div class="header-badge">
         <span class="dot"></span> Live
       </div>
+      <button class="next-match-trigger-btn" id="open-break-btn" title="Lihat Overview Match Selanjutnya">
+        ⚔️ Match Berikutnya
+      </button>
       <!-- Theme Toggle -->
       <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Light/Dark Mode" aria-label="Toggle theme">
         <span class="theme-toggle-knob" id="theme-toggle-knob">🌙</span>
@@ -61,6 +64,31 @@
     </div>
   </div>
 
+  <!-- Next Match / Intermission Break Overlay Screen -->
+  <div class="modal-overlay break-overlay" id="break-overlay" role="dialog" aria-modal="true">
+    <div class="break-modal-container">
+      <div class="break-modal-header">
+        <div class="break-header-left">
+          <span class="break-live-badge"><span class="pulse-dot"></span> UP NEXT • INTERMISSION</span>
+          <h2 class="break-title" id="bo-round-title">ROUND OF 16</h2>
+          <div class="break-subtitle" id="bo-match-sub">MATCH #1 &bull; BO1 &bull; 13 AGUSTUS 2026</div>
+        </div>
+        <button class="modal-close break-close-btn" id="break-close-btn" aria-label="Tutup">✕</button>
+      </div>
+
+      <div class="break-arena-stage" id="bo-arena-content">
+        <!-- Dynamic Content Rendered via js/app.js -->
+      </div>
+
+      <div class="break-ticker-bar">
+        <div class="ticker-badge">LIVESTREAM INFO</div>
+        <div class="ticker-content">
+          <span id="bo-ticker-text">⚔️ Selamat datang di Turnamen MLBB B-Log Branch Jabar 2026! &bull; Tetap Junjung Tinggi Sportivitas & Fair Play! &bull; Pertandingan selanjutnya akan segera dimulai...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Live Toast Notification Container -->
   <div id="live-toast-container"></div>
 
@@ -68,6 +96,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/roster-data.js"></script>
   <script src="js/coin-shatter.js"></script>
   <script src="js/champion.js"></script>
   <script src="js/bracket.js"></script>

@@ -155,6 +155,33 @@
             <p style="font-size:.85rem;color:var(--text-3)">Memuat...</p>
           </div>
         </div>
+
+        <!-- Intermission / Break Screen Control Panel -->
+        <div class="panel" style="margin-top:20px;border-color:var(--cyan);">
+          <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>📺 Control Layar Break / Next Match</span>
+            <span id="break-status-badge" class="status-pill pending">Status: OFF</span>
+          </div>
+          <p style="font-size:.84rem;color:var(--text-2);margin-bottom:14px">
+            Aktifkan mode break untuk menampilkan Roster 5 vs 5 & Overview Pertandingan selanjutnya secara live pada seluruh layar penonton/TV stream.
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <div style="flex:1;min-width:200px;">
+              <label class="form-label" style="font-size:0.75rem;margin-bottom:4px;">PILIH MATCH BERIKUTNYA:</label>
+              <select id="break-match-select" class="form-input">
+                <option value="auto">Auto (Match Pending Pertama)</option>
+              </select>
+            </div>
+            <div style="width:140px;">
+              <label class="form-label" style="font-size:0.75rem;margin-bottom:4px;">TIMER (MENIT):</label>
+              <input type="number" id="break-timer-input" class="form-input" min="1" max="60" value="5" />
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="toggle-break-btn">🚀 Tampilkan Layar Break (ON)</button>
+            <button class="btn btn-secondary" id="hide-break-btn">⏹️ Tutup Layar Break (OFF)</button>
+          </div>
+        </div>
       </section>
 
       <!-- ── TAB: SETTINGS ── -->
@@ -214,6 +241,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/roster-data.js"></script>
   <script src="js/bracket.js"></script>
   <script src="js/admin.js"></script>
   <!-- Override nav-item → tab-btn for admin.js compatibility -->
