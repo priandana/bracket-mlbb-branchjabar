@@ -1,11 +1,12 @@
 // =====================================================
 // ROSTER DATA — roster-data.js
-// Complete roster mapping for Teams 1 to 10
+// Complete roster mapping for Teams 1 to 10 with aliases
 // =====================================================
 
 const ROSTER_DATA = {
   team_1: {
     name: "Bandung 1",
+    aliases: ["bandung 1", "babyel", "godplant"],
     players: [
       { name: "Muhammad Devin Pratama", nickname: "BabyEL", division: "Bandung 1", role: "JUNGLER" },
       { name: "Rijal Faisal Sani", nickname: "BOENK", division: "Bandung 1", role: "ROAMER" },
@@ -17,6 +18,7 @@ const ROSTER_DATA = {
   },
   team_2: {
     name: "Dispatcher & Driver",
+    aliases: ["dispatcher", "driver", "dispatcher & driver"],
     players: [
       { name: "Dik Dik Eka Kustiwa", nickname: "Rancatan Potong", division: "Dispatcher", role: "MID LANER" },
       { name: "Agung Yuwono", nickname: "PODOL angsa", division: "Driver", role: "ROAMER" },
@@ -27,6 +29,7 @@ const ROSTER_DATA = {
   },
   team_3: {
     name: "Picker",
+    aliases: ["picker", "escobar", "risam", "strom"],
     players: [
       { name: "MUHAMMAD RISAM AL KAELANI", nickname: "R I S A M", division: "Picker", role: "MID LANER" },
       { name: "Azis", nickname: "STROM", division: "Picker", role: "JUNGLER / EXP" },
@@ -38,6 +41,7 @@ const ROSTER_DATA = {
   },
   team_4: {
     name: "Sorter & Runner",
+    aliases: ["sorter", "runner", "sorter & runner", "last breath", "ah males jago"],
     players: [
       { name: "Rafli Saepul Anwar", nickname: "AH MALES JAGO", division: "Sorter", role: "GOLD LANER" },
       { name: "Andi nurmawan", nickname: "Pergi jauh", division: "Sorter", role: "MID LANER" },
@@ -48,6 +52,7 @@ const ROSTER_DATA = {
   },
   team_5: {
     name: "Outbound, Helper & Loader",
+    aliases: ["outbound helper loader", "ethereal"],
     players: [
       { name: "Muhammad arya yuda", nickname: "Ethereal", division: "Outbound", role: "GOLD LANER" },
       { name: "Alwi Nurhakim", nickname: "Wil Handsome", division: "Helper", role: "GOLD LANER" },
@@ -58,6 +63,7 @@ const ROSTER_DATA = {
   },
   team_6: {
     name: "Shift Leader, Admin & Outbound",
+    aliases: ["shift leader admin outbound", "iron fangs", "agusmdn"],
     players: [
       { name: "Agus Maulana", nickname: "AgusMDN", division: "Shift Leader", role: "JUNGLER" },
       { name: "Lutfi Rukmana", nickname: "SteveAngelow", division: "Admin Dry", role: "EXP LANER" },
@@ -68,6 +74,7 @@ const ROSTER_DATA = {
   },
   team_7: {
     name: "Inbound & Return, Staff & Retur",
+    aliases: ["inbound & return", "tuan muda", "smoke_weed"],
     players: [
       { name: "Fatihal Rizkal Azmil", nickname: "[GS] Smoke_Weed", division: "Shift Leader", role: "EXP LANER" },
       { name: "Dael Sahepurohim", nickname: "Kentut Berdahak", division: "Senior Staff", role: "JUNGLER" },
@@ -78,6 +85,7 @@ const ROSTER_DATA = {
   },
   team_8: {
     name: "Leader, Admin, Retur & Outbound",
+    aliases: ["leader admin retur outbound", "jarrr", "fijar", "alami"],
     players: [
       { name: "Fijar", nickname: "Jarrr", division: "Leader", role: "JUNGLER" },
       { name: "Imam Purnama", nickname: "maaaamski", division: "Admin", role: "MID LANER" },
@@ -89,6 +97,7 @@ const ROSTER_DATA = {
   },
   team_9: {
     name: "Outbound & Picker",
+    aliases: ["outbound & picker", "nokturnal", "kiilua"],
     players: [
       { name: "Ibnu Rizal", nickname: "KiiLuA", division: "Shift Leader", role: "JUNGLER" },
       { name: "YUZAR HAEKALSA RAJAB", nickname: "Meidofukashi", division: "Outbound", role: "EXP LANER" },
@@ -99,6 +108,7 @@ const ROSTER_DATA = {
   },
   team_10: {
     name: "TOC & Driver",
+    aliases: ["toc & driver", "no mercy", "warlordcalamity"],
     players: [
       { name: "Aziz Ainul Yakin", nickname: "WarlordCalamity", division: "TOC", role: "EXP LANER" },
       { name: "Adam", nickname: "albarack", division: "Driver", role: "ROAMER" },
@@ -111,15 +121,36 @@ const ROSTER_DATA = {
 };
 
 /**
- * Get roster for a team ID or name fallback
+ * Get roster for a team ID or team Name
  */
 function getTeamRoster(teamId, teamName) {
+  // 1. Check if _teams[teamId] has explicit rosterKey assigned by admin
+  if (teamId && typeof _teams !== 'undefined' && _teams && _teams[teamId]) {
+    const t = _teams[teamId];
+    if (t.players && Array.isArray(t.players)) {
+      return { name: t.name, players: t.players };
+    }
+    if (t.rosterKey && ROSTER_DATA[t.rosterKey]) {
+      return ROSTER_DATA[t.rosterKey];
+    }
+  }
+
+  // 2. Try matching by teamName against aliases / names
+  if (teamName) {
+    const lower = teamName.toLowerCase().trim();
+    const matchKey = Object.keys(ROSTER_DATA).find(k => {
+      const r = ROSTER_DATA[k];
+      if (r.name.toLowerCase() === lower) return true;
+      if (r.aliases && r.aliases.some(a => a.toLowerCase() === lower)) return true;
+      return false;
+    });
+    if (matchKey) return ROSTER_DATA[matchKey];
+  }
+
+  // 3. Fallback to teamId
   if (teamId && ROSTER_DATA[teamId]) {
     return ROSTER_DATA[teamId];
   }
-  if (teamName) {
-    const key = Object.keys(ROSTER_DATA).find(k => ROSTER_DATA[k].name.toLowerCase() === teamName.toLowerCase());
-    if (key) return ROSTER_DATA[key];
-  }
+
   return null;
 }

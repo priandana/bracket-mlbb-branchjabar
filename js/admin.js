@@ -99,6 +99,7 @@ function initAdminListeners() {
 }
 
 // ── SETUP TAB ─────────────────────────────────────────
+// ── SETUP TAB ─────────────────────────────────────────
 function populateSetupForm() {
   const s = _settings;
   const nameEl = document.getElementById('setup-name');
@@ -110,7 +111,12 @@ function populateSetupForm() {
   const valEl = document.getElementById('num-teams-val');
   if (valEl) valEl.textContent = num;
 
-  buildTeamInputs(num, s.teamNames || {});
+  const existingRosters = {};
+  for (const tid in _teams) {
+    if (_teams[tid].rosterKey) existingRosters[tid] = _teams[tid].rosterKey;
+  }
+
+  buildTeamInputs(num, s.teamNames || {}, existingRosters);
   renderMatchupBuilder();
 
   const statusEl = document.getElementById('setup-status');
@@ -125,19 +131,36 @@ function populateSetupForm() {
 document.getElementById('num-teams-slider')?.addEventListener('input', function() {
   const v = parseInt(this.value);
   document.getElementById('num-teams-val').textContent = v;
-  buildTeamInputs(v, {});
+  buildTeamInputs(v, {}, {});
   _customPairings = []; // reset custom pairings on team count change
   renderMatchupBuilder();
 });
 
-function buildTeamInputs(count, existingNames) {
+function buildTeamInputs(count, existingNames, existingRosters = {}) {
   const grid = document.getElementById('team-inputs-grid');
   if (!grid) return;
   grid.innerHTML = '';
+
+  const rosterOptionsHTML = `
+    <option value="auto">Auto (Sesuai Nomot Tim)</option>
+    <option value="team_1">Tim 1 — Bandung 1 (BabyEL)</option>
+    <option value="team_2">Tim 2 — Dispatcher & Driver (Rancatan)</option>
+    <option value="team_3">Tim 3 — Picker (RISAM)</option>
+    <option value="team_4">Tim 4 — Sorter & Runner (AH MALES JAGO)</option>
+    <option value="team_5">Tim 5 — Outbound, Helper & Loader (Ethereal)</option>
+    <option value="team_6">Tim 6 — Shift Leader, Admin (AgusMDN)</option>
+    <option value="team_7">Tim 7 — Inbound & Return ([GS] Smoke_Weed)</option>
+    <option value="team_8">Tim 8 — Leader, Admin, Retur (Jarrr)</option>
+    <option value="team_9">Tim 9 — Outbound & Picker (KiiLuA)</option>
+    <option value="team_10">Tim 10 — TOC & Driver (WarlordCalamity)</option>
+  `;
+
   for (let i = 1; i <= count; i++) {
     const row = document.createElement('div');
     row.className = 'team-input-row';
     const val = existingNames[`team_${i}`] || `Tim ${i}`;
+    const selectedRoster = existingRosters[`team_${i}`] || `team_${i}`;
+
     row.innerHTML = `
       <span class="team-num">${i}</span>
       <input
@@ -148,15 +171,22 @@ function buildTeamInputs(count, existingNames) {
         placeholder="Nama Tim ${i}"
         value="${esc(val)}"
         maxlength="25"
-      />`;
+        style="flex:1;"
+      />
+      <select class="form-input team-roster-select" id="team-roster-${i}" data-team-id="team_${i}" style="font-size:0.75rem;max-width:210px;" title="Pilih Roster Divisi">
+        ${rosterOptionsHTML}
+      </select>`;
+
     grid.appendChild(row);
+
+    const sel = row.querySelector(`#team-roster-${i}`);
+    if (sel && selectedRoster) sel.value = selectedRoster;
   }
 
   // Add listeners to team inputs so dropdowns update live
-  grid.querySelectorAll('.team-name-input').forEach(input => {
-    input.addEventListener('input', () => {
-      renderMatchupBuilder(true); // keep selected IDs
-    });
+  grid.querySelectorAll('.team-name-input, .team-roster-select').forEach(input => {
+    input.addEventListener('change', () => renderMatchupBuilder(true));
+    input.addEventListener('input', () => renderMatchupBuilder(true));
   });
 }
 
@@ -166,8 +196,10 @@ function getCurrentTeams() {
   const teams = [];
   for (let i = 1; i <= numTeams; i++) {
     const el = document.getElementById(`team-name-${i}`);
+    const rEl = document.getElementById(`team-roster-${i}`);
     const name = el ? (el.value.trim() || `Tim ${i}`) : `Tim ${i}`;
-    teams.push({ id: `team_${i}`, name, seed: i });
+    const rosterKey = rEl && rEl.value !== 'auto' ? rEl.value : `team_${i}`;
+    teams.push({ id: `team_${i}`, name, seed: i, rosterKey });
   }
   return teams;
 }
@@ -267,19 +299,32 @@ document.getElementById('btn-reset-matchups')?.addEventListener('click', () => {
   toast('Matchup dikembalikan ke alur resmi yang paling ideal & seimbang! Klik Simpan & Generate untuk memperbarui.', 'success');
 });
 
-// Save tournament name + team names
+// Save tournament name + team names + roster keys
 document.getElementById('save-setup-btn')?.addEventListener('click', async () => {
   const name     = document.getElementById('setup-name').value.trim() || 'ML Tournament';
   const numTeams = parseInt(document.getElementById('num-teams-slider').value);
 
   const teamNames = {};
+  const updates = {};
+
   for (let i = 1; i <= numTeams; i++) {
     const v = document.getElementById(`team-name-${i}`)?.value.trim() || `Tim ${i}`;
+    const r = document.getElementById(`team-roster-${i}`)?.value || 'auto';
+    const rKey = r !== 'auto' ? r : `team_${i}`;
+
     teamNames[`team_${i}`] = v;
+    if (_teams[`team_${i}`]) {
+      updates[`${ROOT}/teams/team_${i}/name`] = v;
+      updates[`${ROOT}/teams/team_${i}/rosterKey`] = rKey;
+    }
   }
 
-  await db.ref(`${ROOT}/settings`).update({ name, numTeams, teamNames });
-  toast('Nama tim tersimpan!', 'success');
+  updates[`${ROOT}/settings/name`] = name;
+  updates[`${ROOT}/settings/numTeams`] = numTeams;
+  updates[`${ROOT}/settings/teamNames`] = teamNames;
+
+  await db.ref().update(updates);
+  toast('Nama tim & Roster divisi tersimpan!', 'success');
 });
 
 // Generate Bracket from Custom Pairings
@@ -312,7 +357,9 @@ document.getElementById('generate-bracket-btn')?.addEventListener('click', async
 
   // Teams object for Firebase
   const teamsObj = {};
-  for (const t of teams) teamsObj[t.id] = { id: t.id, name: t.name, seed: t.seed };
+  for (const t of teams) {
+    teamsObj[t.id] = { id: t.id, name: t.name, seed: t.seed, rosterKey: t.rosterKey };
+  }
 
   // Save to Firebase
   const updates = {};
