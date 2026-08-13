@@ -313,10 +313,10 @@ document.getElementById('save-setup-btn')?.addEventListener('click', async () =>
     const rKey = r !== 'auto' ? r : `team_${i}`;
 
     teamNames[`team_${i}`] = v;
-    if (_teams[`team_${i}`]) {
-      updates[`${ROOT}/teams/team_${i}/name`] = v;
-      updates[`${ROOT}/teams/team_${i}/rosterKey`] = rKey;
-    }
+    updates[`${ROOT}/teams/team_${i}/id`] = `team_${i}`;
+    updates[`${ROOT}/teams/team_${i}/name`] = v;
+    updates[`${ROOT}/teams/team_${i}/seed`] = i;
+    updates[`${ROOT}/teams/team_${i}/rosterKey`] = rKey;
   }
 
   updates[`${ROOT}/settings/name`] = name;
