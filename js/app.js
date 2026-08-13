@@ -202,13 +202,17 @@ function renderBracket() {
     const numMatches = bracketSize / Math.pow(2, r);
     const slotH      = BRACKET_H / numMatches;
     const isBO3      = rMatches.length > 0 && rMatches[0].format === 'BO3';
-    const roundName  = rMatches.length > 0 ? rMatches[0].roundName : `Round ${r}`;
+    const roundName  = rMatches.length > 0 ? rMatches[0].roundName : getRoundName(r, totalRounds);
+    const roundDate  = (rMatches.length > 0 && rMatches[0].roundDate) ? rMatches[0].roundDate : getRoundDate(r, totalRounds);
 
     html += `
       <div class="round-col" id="round-col-${r}">
         <div class="round-header">
           <span class="round-label">${roundName}</span>
-          <span class="round-format-tag ${isBO3 ? 'bo3' : 'bo1'}">${isBO3 ? 'BO3' : 'BO1'}</span>
+          <div class="round-meta">
+            <span class="round-format-tag ${isBO3 ? 'bo3' : 'bo1'}">${isBO3 ? 'BO3' : 'BO1'}</span>
+            <span class="round-date-tag">📅 ${roundDate}</span>
+          </div>
         </div>
         <div class="round-matches" style="height:${BRACKET_H}px;" id="round-matches-${r}">`;
 
@@ -534,6 +538,11 @@ function openViewerMatchModal(matchId) {
 
   document.getElementById('vm-title').textContent = m.roundName;
   document.getElementById('vm-format').textContent = m.format;
+  const vmDateEl = document.getElementById('vm-date');
+  if (vmDateEl) {
+    const tot = _settings.totalRounds || 4;
+    vmDateEl.textContent = m.roundDate || getRoundDate(m.round, tot);
+  }
 
   const body = document.getElementById('vm-body');
 

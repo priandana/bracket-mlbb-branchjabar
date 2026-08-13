@@ -49,6 +49,20 @@ function getRoundName(round, total) {
 }
 
 /**
+ * Get date for a round
+ * Round 16 & Quarter Final: 13 Agustus 2026
+ * Semi Final & Grand Final: 14 Agustus 2026
+ */
+function getRoundDate(round, total) {
+  const fromEnd = total - round;
+  if (fromEnd === 0) return '14 Agustus 2026'; // Grand Final
+  if (fromEnd === 1) return '14 Agustus 2026'; // Semi Final
+  if (fromEnd === 2) return '13 Agustus 2026'; // Quarter Final
+  if (fromEnd === 3) return '13 Agustus 2026'; // Round of 16
+  return '13 Agustus 2026';
+}
+
+/**
  * Calculate BO3 score from games object
  */
 function calcBO3(games, team1Id, team2Id) {
@@ -85,6 +99,7 @@ function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
   // ── 1. Round 1 ─────────────────────────────────────
   const r1format    = getFormat(1, totalRounds);
   const r1RoundName = getRoundName(1, totalRounds);
+  const r1RoundDate = getRoundDate(1, totalRounds);
   const numR1       = bracketSize / 2;
 
   for (let pos = 0; pos < numR1; pos++) {
@@ -100,6 +115,7 @@ function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
       round:     1,
       position:  pos,
       roundName: r1RoundName,
+      roundDate: r1RoundDate,
       format:    r1format,
       team1:     t1 ? t1.id : null,
       team2:     t2 ? t2.id : null,
@@ -115,6 +131,7 @@ function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
     const numMatches = bracketSize / Math.pow(2, r);
     const fmt   = getFormat(r, totalRounds);
     const rName = getRoundName(r, totalRounds);
+    const rDate = getRoundDate(r, totalRounds);
 
     for (let m = 0; m < numMatches; m++) {
       const id = `r${r}_m${m}`;
@@ -123,6 +140,7 @@ function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
         round:     r,
         position:  m,
         roundName: rName,
+        roundDate: rDate,
         format:    fmt,
         team1:     null,
         team2:     null,

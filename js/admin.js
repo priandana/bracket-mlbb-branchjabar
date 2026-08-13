@@ -354,9 +354,11 @@ function loadMatchesTab() {
     const statusLabel = m.isBye ? 'BYE' : m.status === 'done' ? 'Selesai' : 'Menunggu';
     const itemCls     = m.isBye ? 'match-item bye-item' : m.status === 'done' ? 'match-item done' : 'match-item';
 
+    const rDate       = m.roundDate || getRoundDate(m.round, _settings.totalRounds || 4);
+
     return `
       <div class="${itemCls}" data-match-id="${m.id}" onclick="openMatchModal('${m.id}')">
-        <div class="match-item-round">${m.roundName}</div>
+        <div class="match-item-round">${m.roundName} &bull; <span style="font-weight:normal;opacity:0.8;">📅 ${rDate}</span></div>
         <div class="match-item-teams">
           <span>${esc(t1)}</span>
           <span class="match-item-vs">VS</span>
@@ -385,6 +387,8 @@ function openMatchModal(matchId) {
 
   document.getElementById('modal-match-title').textContent = m.roundName;
   document.getElementById('modal-match-format').textContent = m.format;
+  const dateEl = document.getElementById('modal-match-date');
+  if (dateEl) dateEl.textContent = m.roundDate || getRoundDate(m.round, _settings.totalRounds || 4);
 
   const body = document.getElementById('modal-body');
 

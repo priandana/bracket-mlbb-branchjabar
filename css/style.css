@@ -500,6 +500,27 @@ body {
 }
 .round-format-tag.bo3 { color: var(--gold); }
 
+.round-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.round-date-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.3px;
+}
+[data-theme="light"] .round-date-tag {
+  color: #CBD5E1;
+}
+
 .round-matches {
   display: flex;
   flex-direction: column;
