@@ -104,7 +104,8 @@ const ROSTER_DATA = {
       { name: "YUZAR HAEKALSA RAJAB", nickname: "Meidofukashi", division: "Outbound", role: "EXP LANER" },
       { name: "Salman alfarisi", nickname: "Vincent.", division: "Outbound", role: "ROAMER" },
       { name: "Samsul arifin", nickname: "Streem", division: "Outbound", role: "JUNGLER" },
-      { name: "FAJAR HIDAYAT", nickname: "[Ken] LavioTz", division: "Picker", role: "GOLD LANER" }
+      { name: "FAJAR HIDAYAT", nickname: "[Ken] LavioTz", division: "Picker", role: "GOLD LANER" },
+      { name: "Sendi afriansyah", nickname: "Sendi07", division: "Driver", role: "GOLD LANER / MID" }
     ]
   },
   team_10: {
