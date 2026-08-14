@@ -64,10 +64,15 @@ function initViewer() {
     document.getElementById('tournament-name').textContent = name;
     document.title = name + ' — Bracket';
 
-    if (s.status === 'setup' || !s.totalRounds) {
-      showEmpty();
-      return;
-    }
+    _prevTournamentStatus = s.status;
+    _isInitialSettingsLoad = false;
+
+    _meta = {
+      totalRounds: s.totalRounds || _meta.totalRounds,
+      bracketSize: s.bracketSize || _meta.bracketSize
+    };
+    tryRender();
+  });
 
     // Champion screen trigger — only when status CHANGES to 'done' while viewer is open
     if (!_isInitialSettingsLoad && s.status === 'done' && _prevTournamentStatus !== 'done') {
@@ -181,12 +186,34 @@ function ensureThirdPlaceMatchExists() {
 }
 
 function tryRender() {
-  if (!_meta.totalRounds || !Object.keys(_matches).length) {
-    if (Object.keys(_matches).length === 0 && _isInitialSettingsLoad === false) {
+  const matchKeys = Object.keys(_matches);
+  if (!matchKeys.length) {
+    if (!_isInitialSettingsLoad) {
       showEmpty();
     }
     return;
   }
+
+  // Auto-infer totalRounds & bracketSize from matches if missing in _meta
+  if (!_meta.totalRounds || !_meta.bracketSize) {
+    let maxR = 0;
+    for (const k in _matches) {
+      const m = _matches[k];
+      if (m && m.round && m.id !== 'm_third') {
+        if (m.round > maxR) maxR = m.round;
+      }
+    }
+    if (maxR > 0) {
+      _meta.totalRounds = maxR;
+      _meta.bracketSize = Math.pow(2, maxR);
+    }
+  }
+
+  if (!_meta.totalRounds) {
+    showEmpty();
+    return;
+  }
+
   try {
     ensureThirdPlaceMatchExists();
     hideLoadingSpinner();
