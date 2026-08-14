@@ -1,6 +1,7 @@
 // =====================================================
-// COIN SHATTER & CINEMATIC VICTORY SMASH ENGINE — coin-shatter.js
-// Dynamic canvas particle physics, Indonesian female announcer & speech FX
+// MLBB HERO VICTORY ANIMATION ENGINE — coin-shatter.js
+// Featuring MIYA (Moonlight Archer) Projectile Attack,
+// Celestial Particle Physics & Indonesian Voice Announcer
 // =====================================================
 
 const CoinShatterEngine = (function() {
@@ -17,16 +18,16 @@ const CoinShatterEngine = (function() {
       window.speechSynthesis.cancel();
       const cleanName = teamName || 'Tim Pemenang';
       const phrases = [
-        `${cleanName}, menang!`,
-        `Selamat kepada ${cleanName}!`,
-        `${cleanName} meraih kemenangan!`,
-        `Kemenangan mutlak untuk ${cleanName}!`
+        `One shot, one kill! Kemenangan mutlak untuk ${cleanName}!`,
+        `${cleanName} menang! Panah cahaya bulan mengalahkan lawan!`,
+        `Selamat kepada ${cleanName}! Kemenangan gemilang!`,
+        `Victory! Kemenangan untuk ${cleanName}!`
       ];
       const text = phrases[Math.floor(Math.random() * phrases.length)];
       const utterance = new SpeechSynthesisUtterance(text);
 
-      utterance.rate = 1.0;
-      utterance.pitch = 1.5; // Distinct high female voice pitch
+      utterance.rate = 1.05;
+      utterance.pitch = 1.4; // Distinct high female voice pitch
       utterance.volume = 1.0;
       utterance.lang = 'id-ID';
 
@@ -38,13 +39,11 @@ const CoinShatterEngine = (function() {
         const isMale = (v) => maleKeywords.some(m => v.name.toLowerCase().includes(m));
         const isFemale = (v) => femaleKeywords.some(f => v.name.toLowerCase().includes(f));
 
-        // 1. Indonesian Female Voice
         let selectedVoice = voices.find(v => 
           v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('ind')) &&
           !isMale(v) && isFemale(v)
         );
 
-        // 2. Any Indonesian Non-Male Voice
         if (!selectedVoice) {
           selectedVoice = voices.find(v => 
             v.lang && (v.lang.toLowerCase().includes('id') || v.lang.toLowerCase().includes('ind')) &&
@@ -52,7 +51,6 @@ const CoinShatterEngine = (function() {
           );
         }
 
-        // 3. Any Female Voice
         if (!selectedVoice) {
           selectedVoice = voices.find(v => isFemale(v) && !isMale(v));
         }
@@ -68,8 +66,7 @@ const CoinShatterEngine = (function() {
     }
   }
 
-  // Sound synthesis using Web Audio API
-  function playImpactSFX() {
+  function getAudioContext() {
     try {
       if (!audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -78,51 +75,111 @@ const CoinShatterEngine = (function() {
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
-      if (!audioCtx) return;
+      return audioCtx;
+    } catch (e) {
+      return null;
+    }
+  }
 
-      const now = audioCtx.currentTime;
+  // 1. Bow Release / Arrow Launch SFX (Web Audio Synthesizer)
+  function playBowReleaseSFX() {
+    try {
+      const actx = getAudioContext();
+      if (!actx) return;
+      const now = actx.currentTime;
 
-      // 1. Heavy Sub-Bass Impact Boom
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+      // Whizzing arrow sound (bandpass filtered noise ramp)
+      const bufferSize = actx.sampleRate * 0.25;
+      const noiseBuffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+      }
+
+      const noise = actx.createBufferSource();
+      noise.buffer = noiseBuffer;
+
+      const filter = actx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(800, now);
+      filter.frequency.exponentialRampToValueAtTime(3200, now + 0.22);
+      filter.Q.setValueAtTime(4.0, now);
+
+      const gain = actx.createGain();
+      gain.gain.setValueAtTime(0.8, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(actx.destination);
+      noise.start(now);
+
+      // Chime harmonic (Celestial arrow glow tone)
+      const osc = actx.createOscillator();
+      const oscGain = actx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.exponentialRampToValueAtTime(25, now + 0.45);
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(2400, now + 0.22);
 
-      gain.gain.setValueAtTime(1.2, now);
+      oscGain.gain.setValueAtTime(0.4, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+
+      osc.connect(oscGain);
+      oscGain.connect(actx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch (e) {
+      console.warn('Bow SFX error:', e);
+    }
+  }
+
+  // 2. Crystal Arrow Impact SFX (Web Audio Synthesizer)
+  function playImpactSFX() {
+    try {
+      const actx = getAudioContext();
+      if (!actx) return;
+      const now = actx.currentTime;
+
+      // Heavy sub-bass boom
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(240, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.45);
+
+      gain.gain.setValueAtTime(1.3, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
 
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(actx.destination);
       osc.start(now);
       osc.stop(now + 0.45);
 
-      // 2. High Glass & Metallic Shatter Noise
-      const bufferSize = audioCtx.sampleRate * 0.3;
-      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      // Metallic & Crystal Shatter Noise
+      const bufferSize = actx.sampleRate * 0.35;
+      const noiseBuffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.18));
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
       }
 
-      const whiteNoise = audioCtx.createBufferSource();
+      const whiteNoise = actx.createBufferSource();
       whiteNoise.buffer = noiseBuffer;
 
-      const filter = audioCtx.createBiquadFilter();
+      const filter = actx.createBiquadFilter();
       filter.type = 'highpass';
-      filter.frequency.setValueAtTime(1500, now);
+      filter.frequency.setValueAtTime(1800, now);
 
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.9, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      const noiseGain = actx.createGain();
+      noiseGain.gain.setValueAtTime(1.0, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
 
       whiteNoise.connect(filter);
       filter.connect(noiseGain);
-      noiseGain.connect(audioCtx.destination);
-
+      noiseGain.connect(actx.destination);
       whiteNoise.start(now);
     } catch (e) {
-      console.warn('SFX audio play blocked or unsupported:', e);
+      console.warn('SFX impact play error:', e);
     }
   }
 
@@ -144,44 +201,39 @@ const CoinShatterEngine = (function() {
     canvas.height = window.innerHeight;
   }
 
-  function createFissureAndShatterParticles(x, y) {
-    const numFragments = 22;
+  // Particle Burst for Moonlight Arrow Impact
+  function createMoonlightParticles(x, y) {
+    const numCrystalFragments = 26;
+    const crystalColors = ['#38BDF8', '#0284C7', '#7DD3FC', '#F59E0B', '#FFFFFF'];
 
-    const obsidianColors = ['#0F172A', '#1E293B', '#334155'];
-    const moltenColors = ['#F59E0B', '#FBBF24', '#EF4444', '#F97316'];
-
-    for (let i = 0; i < numFragments; i++) {
-      const angle = (i / numFragments) * Math.PI * 2 + (Math.random() * 0.25);
-      const speed = 5 + Math.random() * 11;
+    for (let i = 0; i < numCrystalFragments; i++) {
+      const angle = (i / numCrystalFragments) * Math.PI * 2 + (Math.random() * 0.3);
+      const speed = 6 + Math.random() * 12;
       const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed - (Math.random() * 4 + 2);
-
-      const isMolten = Math.random() > 0.4;
-      const colorArr = isMolten ? moltenColors : obsidianColors;
+      const vy = Math.sin(angle) * speed - (Math.random() * 5 + 2);
 
       particles.push({
-        type: 'fragment',
-        x: x + (Math.random() * 12 - 6),
-        y: y + (Math.random() * 12 - 6),
+        type: 'crystal',
+        x: x + (Math.random() * 10 - 5),
+        y: y + (Math.random() * 10 - 5),
         vx: vx,
         vy: vy,
         rotation: Math.random() * Math.PI * 2,
-        vRot: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 9 + 6,
-        color: colorArr[Math.floor(Math.random() * colorArr.length)],
-        isMolten: isMolten,
+        vRot: (Math.random() - 0.5) * 0.6,
+        size: Math.random() * 9 + 5,
+        color: crystalColors[Math.floor(Math.random() * crystalColors.length)],
         alpha: 1,
         life: 1.0,
-        decay: Math.random() * 0.02 + 0.015,
-        gravity: 0.38
+        decay: Math.random() * 0.025 + 0.018,
+        gravity: 0.35
       });
     }
 
-    const numSparks = 40;
-    const sparkColors = ['#F59E0B', '#38BDF8', '#FBBF24', '#FFFFFF', '#EF4444'];
+    const numSparks = 45;
+    const sparkColors = ['#38BDF8', '#BAE6FD', '#F59E0B', '#FFFFFF', '#67E8F9'];
     for (let i = 0; i < numSparks; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 3 + Math.random() * 14;
+      const speed = 4 + Math.random() * 15;
       particles.push({
         type: 'spark',
         x: x,
@@ -197,19 +249,19 @@ const CoinShatterEngine = (function() {
       });
     }
 
-    const numSmoke = 15;
+    const numSmoke = 16;
     for (let i = 0; i < numSmoke; i++) {
       particles.push({
         type: 'smoke',
-        x: x + (Math.random() * 20 - 10),
-        y: y + (Math.random() * 20 - 10),
-        vx: (Math.random() - 0.5) * 2,
+        x: x + (Math.random() * 24 - 12),
+        y: y + (Math.random() * 24 - 12),
+        vx: (Math.random() - 0.5) * 2.5,
         vy: -Math.random() * 3 - 1,
-        size: Math.random() * 14 + 10,
-        color: '#475569',
-        alpha: 0.5,
+        size: Math.random() * 16 + 12,
+        color: '#1E293B',
+        alpha: 0.55,
         life: 1.0,
-        decay: Math.random() * 0.02 + 0.01,
+        decay: Math.random() * 0.02 + 0.012,
         gravity: -0.05
       });
     }
@@ -239,24 +291,18 @@ const CoinShatterEngine = (function() {
       ctx.save();
       ctx.globalAlpha = p.alpha;
 
-      if (p.type === 'fragment') {
+      if (p.type === 'crystal') {
         p.rotation += p.vRot;
         ctx.translate(p.x, p.y);
         ctx.rotate(p.rotation);
         ctx.fillStyle = p.color;
-
-        if (p.isMolten) {
-          ctx.shadowColor = p.color;
-          ctx.shadowBlur = 10;
-        } else {
-          ctx.shadowColor = '#000';
-          ctx.shadowBlur = 4;
-        }
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 12;
 
         ctx.beginPath();
         ctx.moveTo(0, -p.size);
-        ctx.lineTo(p.size * 0.85, p.size * 0.85);
-        ctx.lineTo(-p.size * 0.85, p.size * 0.65);
+        ctx.lineTo(p.size * 0.7, p.size * 0.7);
+        ctx.lineTo(-p.size * 0.7, p.size * 0.5);
         ctx.closePath();
         ctx.fill();
       } else if (p.type === 'spark') {
@@ -284,71 +330,108 @@ const CoinShatterEngine = (function() {
     }
   }
 
-  function triggerSmash(containerElem, winnerAvatarElem, loserAvatarElem, winnerTeamName = '') {
+  // ── MAIN TRIGGER: MIYA MOONLIGHT ARCHER ATTACK ANIMATION ──
+  function triggerMiyaAttack(containerElem, winnerAvatarElem, loserAvatarElem, winnerTeamName = '') {
     if (!canvas) initCanvas();
-    playImpactSFX();
-    speakVictory(winnerTeamName);
 
     if (!winnerAvatarElem || !loserAvatarElem) {
       if (containerElem) triggerContainerShake(containerElem);
+      speakVictory(winnerTeamName);
       return;
     }
 
     const winnerRect = winnerAvatarElem.getBoundingClientRect();
-    const loserRect = loserAvatarElem.getBoundingClientRect();
+    const loserRect  = loserAvatarElem.getBoundingClientRect();
 
     const wX = winnerRect.left + winnerRect.width / 2;
     const wY = winnerRect.top + winnerRect.height / 2;
     const lX = loserRect.left + loserRect.width / 2;
     const lY = loserRect.top + loserRect.height / 2;
 
-    const smashClone = winnerAvatarElem.cloneNode(true);
-    smashClone.classList.add('smash-flying-coin');
-    smashClone.style.left = `${wX - winnerRect.width / 2}px`;
-    smashClone.style.top = `${wY - winnerRect.height / 2}px`;
-    smashClone.style.width = `${winnerRect.width}px`;
-    smashClone.style.height = `${winnerRect.height}px`;
-    document.body.appendChild(smashClone);
-
-    loserAvatarElem.style.opacity = '0';
-
     const deltaX = lX - wX;
     const deltaY = lY - wY;
+    const angleRad = Math.atan2(deltaY, deltaX);
+    const angleDeg = angleRad * (180 / Math.PI);
 
-    smashClone.getBoundingClientRect();
+    // 1. Spawn Miya Summon Badge on Winner Card
+    const winnerCard = winnerAvatarElem.closest('.arena-card');
+    let miyaBadge = null;
+    if (winnerCard) {
+      winnerCard.querySelectorAll('.miya-summon-badge').forEach(el => el.remove());
+      miyaBadge = document.createElement('div');
+      miyaBadge.className = 'miya-summon-badge';
+      miyaBadge.innerHTML = `
+        <div class="miya-avatar-wrap">
+          <img src="images/miya-hero.jpg" alt="Miya Moonlight Archer" class="miya-avatar-img" />
+          <div class="miya-lunar-ring"></div>
+        </div>
+        <div class="miya-badge-title">🏹 MIYA • MOONLIGHT ARCHER</div>
+      `;
+      winnerCard.appendChild(miyaBadge);
+      requestAnimationFrame(() => miyaBadge.classList.add('active'));
+    }
 
-    smashClone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.55) rotate(360deg)`;
-    smashClone.style.transition = 'transform 0.42s cubic-bezier(0.15, 0.9, 0.25, 1.25)';
+    // 2. Play Bow Charge & Release Sound
+    playBowReleaseSFX();
 
+    // 3. Spawn Glowing Moonlight Arrow Projectile
+    const arrow = document.createElement('div');
+    arrow.className = 'moonlight-arrow-projectile';
+    arrow.style.left = `${wX}px`;
+    arrow.style.top = `${wY}px`;
+    arrow.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) scale(0.6)`;
+    arrow.innerHTML = `
+      <div class="arrow-energy-head"></div>
+      <div class="arrow-shaft"></div>
+      <div class="arrow-energy-trail"></div>
+      <div class="arrow-crystal-sparkles"></div>
+    `;
+    document.body.appendChild(arrow);
+
+    // Trigger Flying Motion
+    requestAnimationFrame(() => {
+      arrow.style.transition = 'transform 0.38s cubic-bezier(0.18, 0.89, 0.32, 1.15), opacity 0.38s ease';
+      arrow.style.transform = `translate(${deltaX - 20 * Math.cos(angleRad)}px, ${deltaY - 20 * Math.sin(angleRad)}px) rotate(${angleDeg}deg) scale(1.35)`;
+    });
+
+    // 4. On Arrow Hit & Impact (380ms)
     setTimeout(() => {
-      createImpactFlash();
+      // Audio SFX
+      playImpactSFX();
 
-      createFissureAndShatterParticles(lX, lY);
+      // Screen/Impact Visuals
+      createImpactFlash();
+      createLunarShockwave(lX, lY);
+      createMoonlightParticles(lX, lY);
 
       if (containerElem) triggerContainerShake(containerElem);
-
-      createShockwave(lX, lY);
-
-      showVictorySpeechBubble(winnerAvatarElem, winnerTeamName);
 
       const loserCard = loserAvatarElem.closest('.arena-card');
       if (loserCard) {
         loserCard.classList.add('defeated-smoked-out');
       }
 
-      smashClone.style.opacity = '0';
-      smashClone.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.0)`;
-      setTimeout(() => {
-        smashClone.remove();
-        if (loserAvatarElem) {
-          loserAvatarElem.style.transition = 'opacity 0.4s ease';
-          loserAvatarElem.style.opacity = '0.3';
-        }
-      }, 300);
-    }, 420);
+      // Show Speech Bubble & Voice Callout
+      showMiyaSpeechBubble(winnerAvatarElem, winnerTeamName);
+      speakVictory(winnerTeamName);
+
+      // Fade out and remove arrow
+      arrow.style.opacity = '0';
+      setTimeout(() => arrow.remove(), 200);
+
+      // Remove Miya badge after celebration
+      if (miyaBadge) {
+        setTimeout(() => {
+          miyaBadge.style.opacity = '0';
+          miyaBadge.style.transform = 'translate(-50%, -15px) scale(0.85)';
+          miyaBadge.style.transition = 'all 0.5s ease';
+          setTimeout(() => miyaBadge.remove(), 500);
+        }, 3200);
+      }
+    }, 380);
   }
 
-  function showVictorySpeechBubble(winnerAvatarElem, teamName) {
+  function showMiyaSpeechBubble(winnerAvatarElem, teamName) {
     if (!winnerAvatarElem) return;
     const winnerCard = winnerAvatarElem.closest('.arena-card');
     if (!winnerCard) return;
@@ -358,15 +441,15 @@ const CoinShatterEngine = (function() {
 
     const name = (teamName || 'Tim Pemenang').toUpperCase();
     const callouts = [
-      `🔥 ${name} MENANG!`,
-      `🏆 VICTORY ${name}!`,
-      `⚡ ${name} MENGUASAI!`,
-      `👑 ${name} JUARA!`
+      `🏹 "One shot, one kill!" • ${name} MENANG!`,
+      `✨ "Panah rembulan memandu ${name}!"`,
+      `🏆 VICTORY! Kemenangan untuk ${name}!`,
+      `👑 ${name} MENGUASAI LAND OF DAWN!`
     ];
     const speechText = callouts[Math.floor(Math.random() * callouts.length)];
 
     const bubble = document.createElement('div');
-    bubble.className = 'victory-speech-bubble';
+    bubble.className = 'victory-speech-bubble miya-theme-bubble';
     bubble.innerHTML = speechText;
     winnerCard.appendChild(bubble);
 
@@ -375,7 +458,7 @@ const CoinShatterEngine = (function() {
       bubble.style.transform = 'translate(-50%, -15px) scale(0.9)';
       bubble.style.transition = 'all 0.4s ease';
       setTimeout(() => bubble.remove(), 400);
-    }, 2800);
+    }, 3200);
   }
 
   function triggerContainerShake(elem) {
@@ -388,14 +471,14 @@ const CoinShatterEngine = (function() {
 
   function createImpactFlash() {
     const flash = document.createElement('div');
-    flash.className = 'impact-flash-overlay';
+    flash.className = 'impact-flash-overlay miya-lunar-flash';
     document.body.appendChild(flash);
-    setTimeout(() => flash.remove(), 120);
+    setTimeout(() => flash.remove(), 140);
   }
 
-  function createShockwave(x, y) {
+  function createLunarShockwave(x, y) {
     const ring = document.createElement('div');
-    ring.className = 'smash-shockwave';
+    ring.className = 'lunar-crescent-blast';
     ring.style.left = `${x}px`;
     ring.style.top = `${y}px`;
     document.body.appendChild(ring);
@@ -404,7 +487,8 @@ const CoinShatterEngine = (function() {
 
   return {
     init: initCanvas,
-    triggerSmash: triggerSmash,
+    triggerSmash: triggerMiyaAttack,
+    triggerMiyaAttack: triggerMiyaAttack,
     playSFX: playImpactSFX,
     speakVictory: speakVictory
   };

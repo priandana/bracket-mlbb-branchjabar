@@ -1495,6 +1495,159 @@ input[type="range"]::-webkit-slider-thumb {
   100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 
+/* =====================================================
+   MIYA MOONLIGHT ARCHER VICTORY ANIMATION
+   ===================================================== */
+
+/* 1. Miya Summon Badge */
+.miya-summon-badge {
+  position: absolute;
+  top: -85px;
+  left: 50%;
+  transform: translate(-50%, 20px) scale(0.6);
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 10005;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.miya-summon-badge.active {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.miya-avatar-wrap {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #38BDF8, #F59E0B, #0284C7);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.9), 0 0 50px rgba(245, 158, 11, 0.5);
+  animation: miya-float 2.5s infinite ease-in-out;
+}
+
+.miya-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.miya-lunar-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed #38BDF8;
+  animation: miya-spin 8s linear infinite;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+}
+
+.miya-badge-title {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #FFF;
+  background: linear-gradient(135deg, #0284C7, #1E1B4B);
+  border: 1px solid #38BDF8;
+  padding: 3px 10px;
+  border-radius: 100px;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.7);
+  white-space: nowrap;
+}
+
+@keyframes miya-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes miya-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 2. Moonlight Arrow Projectile */
+.moonlight-arrow-projectile {
+  position: fixed;
+  z-index: 10010;
+  pointer-events: none;
+  width: 90px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.arrow-energy-head {
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 24px solid #FFF;
+  filter: drop-shadow(0 0 10px #38BDF8) drop-shadow(0 0 20px #0284C7);
+}
+
+.arrow-shaft {
+  position: absolute;
+  right: 18px;
+  left: 20px;
+  height: 5px;
+  background: linear-gradient(90deg, transparent 0%, #38BDF8 30%, #FFF 80%, #BAE6FD 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 14px #38BDF8, 0 0 28px #0284C7;
+}
+
+.arrow-energy-trail {
+  position: absolute;
+  left: 0;
+  width: 60px;
+  height: 8px;
+  background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.8) 100%);
+  filter: blur(2px);
+}
+
+/* 3. Lunar Crescent Shockwave Blast */
+.lunar-crescent-blast {
+  position: fixed;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 4px solid #38BDF8;
+  box-shadow: 0 0 25px #38BDF8, inset 0 0 25px #7DD3FC;
+  pointer-events: none;
+  z-index: 10008;
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: lunar-blast-expand 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes lunar-blast-expand {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; border-color: #FFF; }
+  50% { opacity: 0.9; border-color: #38BDF8; }
+  100% { transform: translate(-50%, -50%) scale(4.2); opacity: 0; border-width: 1px; }
+}
+
+.impact-flash-overlay.miya-lunar-flash {
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 0%, rgba(56, 189, 248, 0.6) 40%, rgba(2, 132, 199, 0.2) 70%, transparent 100%);
+}
+
+.victory-speech-bubble.miya-theme-bubble {
+  background: linear-gradient(135deg, #0F172A 0%, #0369A1 100%);
+  border: 1.5px solid #38BDF8;
+  color: #E0F2FE;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.8), 0 6px 20px rgba(0,0,0,0.7);
+}
+
+.victory-speech-bubble.miya-theme-bubble::after {
+  border-color: #38BDF8 transparent transparent transparent;
+}
+
 /* Admin Quick Winner Controls Panel */
 .admin-modal-controls {
   margin-top: 16px;
