@@ -58,21 +58,10 @@ function initViewer() {
   setTimeout(hideLoadingSpinner, 4000);
 
   db.ref(`${ROOT}/settings`).on('value', snap => {
-    const s = snap.val();
-    if (!s) { showEmpty(); return; }
+    const s = snap.val() || {};
     const name = s.name || 'ML Tournament';
     document.getElementById('tournament-name').textContent = name;
     document.title = name + ' — Bracket';
-
-    _prevTournamentStatus = s.status;
-    _isInitialSettingsLoad = false;
-
-    _meta = {
-      totalRounds: s.totalRounds || _meta.totalRounds,
-      bracketSize: s.bracketSize || _meta.bracketSize
-    };
-    tryRender();
-  });
 
     // Champion screen trigger — only when status CHANGES to 'done' while viewer is open
     if (!_isInitialSettingsLoad && s.status === 'done' && _prevTournamentStatus !== 'done') {
@@ -91,7 +80,10 @@ function initViewer() {
     _prevTournamentStatus = s.status;
     _isInitialSettingsLoad = false;
 
-    _meta = { totalRounds: s.totalRounds, bracketSize: s.bracketSize };
+    _meta = {
+      totalRounds: s.totalRounds || _meta.totalRounds,
+      bracketSize: s.bracketSize || _meta.bracketSize
+    };
     tryRender();
   });
 
