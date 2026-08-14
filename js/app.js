@@ -747,7 +747,8 @@ function openViewerMatchModal(matchId) {
 
 async function quickAdminPickWinner(matchId, winnerTeamId) {
   const m = _matches[matchId];
-  if (!m || !winnerTeamId) return;
+  if (!m) { alert('Match tidak ditemukan: ' + matchId); return; }
+  if (!winnerTeamId) { alert('Team ID tidak valid'); return; }
 
   const updates = {};
   updates[`${ROOT}/matches/${m.id}/winner`] = winnerTeamId;
@@ -782,7 +783,8 @@ async function quickAdminPickWinner(matchId, winnerTeamId) {
       openViewerMatchModal(matchId);
     }, 150);
   } catch (err) {
-    alert('Gagal menyimpan hasil admin: ' + err.message);
+    console.error('quickAdminPickWinner error:', err);
+    alert('❌ Gagal menyimpan: ' + (err.message || JSON.stringify(err)));
   }
 }
 
