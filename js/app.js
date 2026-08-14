@@ -211,8 +211,12 @@ function tryRender() {
     hideLoadingSpinner();
     renderBracket();
   } catch (err) {
-    console.error('Error in tryRender:', err);
+    console.error('Error in renderBracket:', err);
     hideLoadingSpinner();
+    const root = document.getElementById('bracket-root');
+    if (root) {
+      root.innerHTML = `<div class="empty-state"><span class="emoji">⚠️</span><h2>Error Memuat Bracket</h2><p style="color:#F87171;font-size:0.8rem;">${err.message}</p></div>`;
+    }
   }
 }
 
