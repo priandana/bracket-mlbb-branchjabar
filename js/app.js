@@ -181,6 +181,28 @@ function _getRoundName(round, total) {
   return `Round ${round}`;
 }
 
+function _calcBO3(games, team1Id, team2Id) {
+  let t1 = 0, t2 = 0;
+  if (games) {
+    for (const g of ['g1', 'g2', 'g3']) {
+      if (games[g] === team1Id) t1++;
+      else if (games[g] === team2Id) t2++;
+    }
+  }
+  let winner = null;
+  if (t1 >= 2) winner = team1Id;
+  else if (t2 >= 2) winner = team2Id;
+  return { t1wins: t1, t2wins: t2, winner };
+}
+
+function _getNextMatchInfo(currentRound, currentPosition, totalRounds) {
+  if (currentRound >= totalRounds) return null;
+  const nextRound = currentRound + 1;
+  const nextPos   = Math.floor(currentPosition / 2);
+  const slot      = currentPosition % 2 === 0 ? 'team1' : 'team2';
+  return { matchId: `r${nextRound}_m${nextPos}`, slot };
+}
+
 function ensureThirdPlaceMatchExists() {
   const tot = _meta.totalRounds || 4;
   if (tot >= 2 && !_matches['m_third']) {
@@ -382,7 +404,7 @@ function renderMatchCard(m) {
 
   let t1score = '', t2score = '';
   if (m.format === 'BO3' && m.games) {
-    const r = calcBO3(m.games, m.team1, m.team2);
+    const r = _calcBO3(m.games, m.team1, m.team2);
     t1score = r.t1wins.toString();
     t2score = r.t2wins.toString();
   } else if (m.format === 'BO1' && m.winner) {
@@ -650,7 +672,7 @@ function openViewerMatchModal(matchId) {
 
   let scoresContent = '';
   if (m.format === 'BO3' && m.games) {
-    const { t1wins, t2wins, winner } = calcBO3(m.games, m.team1, m.team2);
+    const { t1wins, t2wins, winner } = _calcBO3(m.games, m.team1, m.team2);
     scoresContent = `
       <div class="score-tally">
         <div class="tally-team ${winner === m.team1 ? 'win-text' : ''}">${esc(t1)} ${winner === m.team1 ? '👑' : ''}</div>
@@ -702,16 +724,16 @@ function openViewerMatchModal(matchId) {
       <div class="admin-modal-controls">
         <div class="admin-controls-title">👑 PANEL ADMIN: TENTUKAN PEMENANG</div>
         <div class="admin-controls-btns">
-          <button class="admin-pick-btn t1-btn ${t1Win ? 'active-win' : ''}" data-pick-match="${m.id}" data-pick-team="${m.team1}">
+          <button class="admin-pick-btn t1-btn ${t1Win ? 'active-win' : ''}" data-pick-match="${m.id}" data-pick-team="${m.team1}" onclick="window.quickAdminPickWinner('${m.id}','${m.team1}')">
             🏆 Menangkan ${esc(t1)}
           </button>
-          <button class="admin-pick-btn t2-btn ${t2Win ? 'active-win' : ''}" data-pick-match="${m.id}" data-pick-team="${m.team2}">
+          <button class="admin-pick-btn t2-btn ${t2Win ? 'active-win' : ''}" data-pick-match="${m.id}" data-pick-team="${m.team2}" onclick="window.quickAdminPickWinner('${m.id}','${m.team2}')">
             🏆 Menangkan ${esc(t2)}
           </button>
         </div>
         ${isDone ? `
           <div style="margin-top:10px;">
-            <button class="admin-reset-btn" data-reset-match="${m.id}">
+            <button class="admin-reset-btn" data-reset-match="${m.id}" onclick="window.quickAdminResetMatch('${m.id}')">
               🔄 Reset / Batalkan Pemenang Match Ini
             </button>
           </div>
@@ -760,38 +782,38 @@ function openViewerMatchModal(matchId) {
 }
 
 async function quickAdminPickWinner(matchId, winnerTeamId) {
-  const m = _matches[matchId];
-  if (!m) { alert('Match tidak ditemukan: ' + matchId); return; }
-  if (!winnerTeamId) { alert('Team ID tidak valid'); return; }
-
-  const updates = {};
-  updates[`${ROOT}/matches/${m.id}/winner`] = winnerTeamId;
-  updates[`${ROOT}/matches/${m.id}/status`] = 'done';
-
-  const totalRounds = _meta.totalRounds || 4;
-
-  if (m.id !== 'm_third') {
-    const next = getNextMatchInfo(m.round, m.position, totalRounds);
-    if (next) {
-      updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = winnerTeamId;
-    } else {
-      updates[`${ROOT}/settings/status`] = 'done';
-    }
-
-    // Auto-advance loser of Semifinal to 3rd Place Match (m_third)
-    if (m.round === (totalRounds - 1)) {
-      const loserId = m.team1 === winnerTeamId ? m.team2 : (m.team2 === winnerTeamId ? m.team1 : null);
-      const slot = m.position === 0 ? 'team1' : 'team2';
-      updates[`${ROOT}/matches/m_third/id`] = 'm_third';
-      updates[`${ROOT}/matches/m_third/round`] = totalRounds - 1;
-      updates[`${ROOT}/matches/m_third/roundName`] = 'PEREBUTAN JUARA 3';
-      updates[`${ROOT}/matches/m_third/format`] = 'BO1';
-      updates[`${ROOT}/matches/m_third/isThirdPlace`] = true;
-      updates[`${ROOT}/matches/m_third/${slot}`] = loserId;
-    }
-  }
-
   try {
+    const m = _matches[matchId];
+    if (!m) { alert('Match tidak ditemukan: ' + matchId); return; }
+    if (!winnerTeamId) { alert('Team ID tidak valid'); return; }
+
+    const updates = {};
+    updates[`${ROOT}/matches/${m.id}/winner`] = winnerTeamId;
+    updates[`${ROOT}/matches/${m.id}/status`] = 'done';
+
+    const totalRounds = _meta.totalRounds || 4;
+
+    if (m.id !== 'm_third') {
+      const next = _getNextMatchInfo(m.round, m.position, totalRounds);
+      if (next) {
+        updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = winnerTeamId;
+      } else {
+        updates[`${ROOT}/settings/status`] = 'done';
+      }
+
+      // Auto-advance loser of Semifinal to 3rd Place Match (m_third)
+      if (m.round === (totalRounds - 1)) {
+        const loserId = m.team1 === winnerTeamId ? m.team2 : (m.team2 === winnerTeamId ? m.team1 : null);
+        const slot = m.position === 0 ? 'team1' : 'team2';
+        updates[`${ROOT}/matches/m_third/id`] = 'm_third';
+        updates[`${ROOT}/matches/m_third/round`] = totalRounds - 1;
+        updates[`${ROOT}/matches/m_third/roundName`] = 'PEREBUTAN JUARA 3';
+        updates[`${ROOT}/matches/m_third/format`] = 'BO1';
+        updates[`${ROOT}/matches/m_third/isThirdPlace`] = true;
+        updates[`${ROOT}/matches/m_third/${slot}`] = loserId;
+      }
+    }
+
     await db.ref().update(updates);
     setTimeout(() => {
       openViewerMatchModal(matchId);
@@ -803,39 +825,40 @@ async function quickAdminPickWinner(matchId, winnerTeamId) {
 }
 
 async function quickAdminResetMatch(matchId) {
-  const m = _matches[matchId];
-  if (!m) return;
-  if (!confirm(`Batalkan hasil pertandingan ${m.roundName}?`)) return;
-
-  const updates = {};
-  updates[`${ROOT}/matches/${m.id}/winner`] = null;
-  updates[`${ROOT}/matches/${m.id}/status`] = 'pending';
-
-  const totalRounds = _meta.totalRounds || 4;
-
-  if (m.id !== 'm_third') {
-    const next = getNextMatchInfo(m.round, m.position, totalRounds);
-    if (next) {
-      updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = null;
-      updates[`${ROOT}/matches/${next.matchId}/winner`] = null;
-      updates[`${ROOT}/matches/${next.matchId}/status`] = 'pending';
-    }
-
-    // Reset 3rd Place Match slot if Semifinal match is reset
-    if (m.round === (totalRounds - 1)) {
-      const slot = m.position === 0 ? 'team1' : 'team2';
-      updates[`${ROOT}/matches/m_third/${slot}`] = null;
-      updates[`${ROOT}/matches/m_third/winner`] = null;
-      updates[`${ROOT}/matches/m_third/status`] = 'pending';
-    }
-  }
-
   try {
+    const m = _matches[matchId];
+    if (!m) return;
+    if (!confirm(`Batalkan hasil pertandingan ${m.roundName}?`)) return;
+
+    const updates = {};
+    updates[`${ROOT}/matches/${m.id}/winner`] = null;
+    updates[`${ROOT}/matches/${m.id}/status`] = 'pending';
+
+    const totalRounds = _meta.totalRounds || 4;
+
+    if (m.id !== 'm_third') {
+      const next = _getNextMatchInfo(m.round, m.position, totalRounds);
+      if (next) {
+        updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = null;
+        updates[`${ROOT}/matches/${next.matchId}/winner`] = null;
+        updates[`${ROOT}/matches/${next.matchId}/status`] = 'pending';
+      }
+
+      // Reset 3rd Place Match slot if Semifinal match is reset
+      if (m.round === (totalRounds - 1)) {
+        const slot = m.position === 0 ? 'team1' : 'team2';
+        updates[`${ROOT}/matches/m_third/${slot}`] = null;
+        updates[`${ROOT}/matches/m_third/winner`] = null;
+        updates[`${ROOT}/matches/m_third/status`] = 'pending';
+      }
+    }
+
     await db.ref().update(updates);
     setTimeout(() => {
       openViewerMatchModal(matchId);
     }, 150);
   } catch (err) {
+    console.error('quickAdminResetMatch error:', err);
     alert('Gagal mereset hasil: ' + err.message);
   }
 }
@@ -1041,3 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Expose admin functions globally so onclick attributes always work
+window.quickAdminPickWinner = quickAdminPickWinner;
+window.quickAdminResetMatch = quickAdminResetMatch;
