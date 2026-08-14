@@ -162,16 +162,26 @@ function hideLoadingSpinner() {
   if (loading) loading.style.display = 'none';
 }
 
+function _getRoundDate(round, total) {
+  const fromEnd = total - round;
+  if (fromEnd === 0) return '14 Agustus 2026';
+  if (fromEnd === 1) return '14 Agustus 2026';
+  if (fromEnd === 2) return '13 Agustus 2026';
+  if (fromEnd === 3) return '13 Agustus 2026';
+  return '13 Agustus 2026';
+}
+
 function ensureThirdPlaceMatchExists() {
   const tot = _meta.totalRounds || 4;
   if (tot >= 2 && !_matches['m_third']) {
+    const sfDate = _getRoundDate(Math.max(1, tot - 1), tot);
     _matches['m_third'] = {
       id: 'm_third',
       round: Math.max(1, tot - 1),
       position: 99,
       isThirdPlace: true,
       roundName: 'PEREBUTAN JUARA 3',
-      roundDate: getRoundDate(tot, tot),
+      roundDate: sfDate,
       format: 'BO1',
       team1: null,
       team2: null,
