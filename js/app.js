@@ -905,37 +905,70 @@ function applyTheme(theme) {
 // ── Next Match Overview & Intermission Overlay ─────────
 let _breakCountdownInterval = null;
 
+function getRoleBadgeHTML(roleStr) {
+  if (!roleStr) return '';
+  const r = roleStr.toUpperCase();
+  let icon = '⚡';
+  let badgeCls = 'role-general';
+  
+  if (r.includes('JUNG')) {
+    icon = '🗡️';
+    badgeCls = 'role-jungler';
+  } else if (r.includes('EXP')) {
+    icon = '⚔️';
+    badgeCls = 'role-exp';
+  } else if (r.includes('GOLD')) {
+    icon = '🏹';
+    badgeCls = 'role-gold';
+  } else if (r.includes('MID')) {
+    icon = '🔮';
+    badgeCls = 'role-mid';
+  } else if (r.includes('ROAM')) {
+    icon = '🛡️';
+    badgeCls = 'role-roamer';
+  }
+  
+  return `<span class="roster-role-badge ${badgeCls}"><span class="role-icon">${icon}</span> ${esc(roleStr)}</span>`;
+}
+
 function renderRosterCardsHTML(teamId, teamName, isBlueSide) {
   const rosterData = typeof getTeamRoster === 'function' ? getTeamRoster(teamId, teamName) : null;
   const sideClass  = isBlueSide ? 'blue-side' : 'red-side';
-  const emblemText = isBlueSide ? '🟦' : '🟥';
+  const emblemText = getInitials(teamName || (isBlueSide ? 'BLUE' : 'RED'));
   const displayName = teamName || 'TBD';
+  const sideTag = isBlueSide ? '🔵 RADIANT SIDE' : '🔴 DIRE SIDE';
 
   let playersHTML = '';
   if (rosterData && rosterData.players && rosterData.players.length > 0) {
-    playersHTML = rosterData.players.map(p => {
-      const roleCls = (p.role || '').toLowerCase().replace(/[^a-z]/g, '');
+    playersHTML = rosterData.players.map((p, idx) => {
       return `
-        <div class="roster-item">
-          <div class="roster-player-info">
-            <span class="roster-nick">${esc(p.nickname || p.name)}</span>
-            <span class="roster-real">${esc(p.name)} (${esc(p.division)})</span>
+        <div class="roster-item" style="animation-delay: ${idx * 0.05}s">
+          <div class="roster-player-left">
+            <span class="roster-num">0${idx + 1}</span>
+            <div class="roster-player-info">
+              <span class="roster-nick">${esc(p.nickname || p.name)}</span>
+              <span class="roster-real">${esc(p.name)} <em class="roster-division">(${esc(p.division)})</em></span>
+            </div>
           </div>
-          <span class="role-badge r-${roleCls}">${esc(p.role)}</span>
+          ${getRoleBadgeHTML(p.role)}
         </div>`;
     }).join('');
   } else {
     playersHTML = `
-      <div style="padding:16px;text-align:center;color:var(--text-3);font-size:0.84rem;">
-        Roster pemain akan segera diumumkan
+      <div style="padding:32px 16px;text-align:center;color:var(--text-3);font-size:0.9rem;font-weight:600;">
+        ⏳ Roster pemain akan segera diumumkan
       </div>`;
   }
 
   return `
     <div class="break-team-card ${sideClass}">
+      <div class="break-team-glow"></div>
       <div class="break-team-header">
         <div class="break-team-emblem">${emblemText}</div>
-        <div class="break-team-name">${esc(displayName)}</div>
+        <div class="break-team-meta">
+          <span class="break-side-tag">${sideTag}</span>
+          <div class="break-team-name">${esc(displayName)}</div>
+        </div>
       </div>
       <div class="roster-list">
         ${playersHTML}
@@ -963,6 +996,38 @@ function renderNextMatchOverview(matchId, endTimeMs) {
   document.getElementById('bo-round-title').textContent = roundTitle;
   document.getElementById('bo-match-sub').textContent = `MATCH ${targetMatch ? targetMatch.id : ''} • ${fmt} • ${rDate.toUpperCase()}`;
 
+  // Populate match dropdown options
+  const selectEl = document.getElementById('bo-match-select');
+  if (selectEl) {
+    const matchesArr = Object.values(_matches).filter(m => !m.isBye);
+    matchesArr.sort((a, b) => a.round - b.round || a.position - b.position);
+    selectEl.innerHTML = matchesArr.map(m => {
+      const t1 = m.team1 ? (_teams[m.team1]?.name || 'TBD') : 'TBD';
+      const t2 = m.team2 ? (_teams[m.team2]?.name || 'TBD') : 'TBD';
+      const label = `${m.roundName} • ${t1} vs ${t2}`;
+      const isSelected = (targetMatch && m.id === targetMatch.id) ? 'selected' : '';
+      return `<option value="${m.id}" ${isSelected}>${esc(label)}</option>`;
+    }).join('');
+
+    selectEl.onchange = (e) => {
+      renderNextMatchOverview(e.target.value, endTimeMs);
+    };
+  }
+
+  // Wire projector fullscreen button
+  const fsBtn = document.getElementById('projector-fs-btn');
+  if (fsBtn) {
+    fsBtn.onclick = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.warn(err));
+        fsBtn.textContent = '🗗 Keluar Fullscreen';
+      } else {
+        document.exitFullscreen().catch(err => console.warn(err));
+        fsBtn.textContent = '⛶ Mode Proyektor';
+      }
+    };
+  }
+
   const t1Name = targetMatch && targetMatch.team1 ? (_teams[targetMatch.team1]?.name || 'TBD') : 'TBD';
   const t2Name = targetMatch && targetMatch.team2 ? (_teams[targetMatch.team2]?.name || 'TBD') : 'TBD';
   const t1Id   = targetMatch ? targetMatch.team1 : null;
@@ -975,10 +1040,16 @@ function renderNextMatchOverview(matchId, endTimeMs) {
     <div class="break-arena-grid">
       ${t1HTML}
       <div class="break-vs-center">
-        <div class="break-vs-shield">VS</div>
+        <div class="break-vs-wrapper">
+          <div class="break-vs-glow-ring"></div>
+          <div class="break-vs-shield">VS</div>
+        </div>
         <div class="break-timer-box">
           <div class="timer-val" id="bo-timer-display">READY</div>
-          <div class="timer-lbl">COUNTDOWN MATCH</div>
+          <div class="timer-lbl">⏱️ COUNTDOWN MATCH</div>
+        </div>
+        <div class="break-format-indicator">
+          <span class="fmt-pill ${fmt.toLowerCase()}">⚔️ ${fmt} MATCH</span>
         </div>
       </div>
       ${t2HTML}
