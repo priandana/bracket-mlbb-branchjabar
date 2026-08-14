@@ -702,16 +702,16 @@ function openViewerMatchModal(matchId) {
       <div class="admin-modal-controls">
         <div class="admin-controls-title">👑 PANEL ADMIN: TENTUKAN PEMENANG</div>
         <div class="admin-controls-btns">
-          <button class="admin-pick-btn t1-btn ${t1Win ? 'active-win' : ''}" onclick="quickAdminPickWinner('${m.id}', '${m.team1}')">
+          <button class="admin-pick-btn t1-btn ${t1Win ? 'active-win' : ''}" data-pick-match="${m.id}" data-pick-team="${m.team1}">
             🏆 Menangkan ${esc(t1)}
           </button>
-          <button class="admin-pick-btn t2-btn ${t2Win ? 'active-win' : ''}" onclick="quickAdminPickWinner('${m.id}', '${m.team2}')">
+          <button class="admin-pick-btn t2-btn ${t2Win ? 'active-win' : ''}" data-pick-match="${m.id}" data-pick-team="${m.team2}">
             🏆 Menangkan ${esc(t2)}
           </button>
         </div>
         ${isDone ? `
           <div style="margin-top:10px;">
-            <button class="admin-reset-btn" onclick="quickAdminResetMatch('${m.id}')">
+            <button class="admin-reset-btn" data-reset-match="${m.id}">
               🔄 Reset / Batalkan Pemenang Match Ini
             </button>
           </div>
@@ -722,6 +722,20 @@ function openViewerMatchModal(matchId) {
 
   document.getElementById('viewer-match-modal').classList.add('show');
   _activeViewerMatchId = matchId;
+
+  // Attach admin button listeners after innerHTML is set
+  body.querySelectorAll('[data-pick-match]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mid = btn.getAttribute('data-pick-match');
+      const tid = btn.getAttribute('data-pick-team');
+      quickAdminPickWinner(mid, tid);
+    });
+  });
+  body.querySelectorAll('[data-reset-match]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      quickAdminResetMatch(btn.getAttribute('data-reset-match'));
+    });
+  });
 
   const triggerModalSmash = () => {
     const arenaStage = body.querySelector('.arena-stage');
