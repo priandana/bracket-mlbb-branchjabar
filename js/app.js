@@ -178,33 +178,24 @@ function ensureThirdPlaceMatchExists() {
 }
 
 function tryRender() {
-  const matchKeys = Object.keys(_matches);
+  const matchKeys = Object.keys(_matches).filter(k => k !== 'm_third');
   if (!matchKeys.length) {
-    if (!_isInitialSettingsLoad) {
-      showEmpty();
-    }
-    return;
-  }
-
-  // Auto-infer totalRounds & bracketSize from matches if missing in _meta
-  if (!_meta.totalRounds || !_meta.bracketSize) {
-    let maxR = 0;
-    for (const k in _matches) {
-      const m = _matches[k];
-      if (m && m.round && m.id !== 'm_third') {
-        if (m.round > maxR) maxR = m.round;
-      }
-    }
-    if (maxR > 0) {
-      _meta.totalRounds = maxR;
-      _meta.bracketSize = Math.pow(2, maxR);
-    }
-  }
-
-  if (!_meta.totalRounds) {
     showEmpty();
     return;
   }
+
+  // Always compute totalRounds & bracketSize from matches if missing or 0
+  let maxR = 0;
+  for (const k of matchKeys) {
+    const m = _matches[k];
+    if (m && m.round) {
+      const r = Number(m.round);
+      if (r > maxR) maxR = r;
+    }
+  }
+
+  _meta.totalRounds = _meta.totalRounds || maxR || 4;
+  _meta.bracketSize = _meta.bracketSize || Math.pow(2, _meta.totalRounds);
 
   try {
     ensureThirdPlaceMatchExists();
