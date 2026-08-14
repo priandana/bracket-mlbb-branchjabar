@@ -9,6 +9,9 @@ let _teams   = {};
 let _matches = {};
 let _meta    = {};
 let _zoomLevel = 1.0;
+let _teamsLoaded   = false;
+let _matchesLoaded = false;
+let _settingsLoaded = false;
 
 // ── Live Toast Notification ───────────────────────────
 function showLiveToast(msg, type = 'info', duration = 5000) {
@@ -81,14 +84,16 @@ function initViewer() {
     _isInitialSettingsLoad = false;
 
     _meta = {
-      totalRounds: s.totalRounds || _meta.totalRounds,
-      bracketSize: s.bracketSize || _meta.bracketSize
+      totalRounds: s.totalRounds || _meta.totalRounds || 4,
+      bracketSize: s.bracketSize || _meta.bracketSize || 16
     };
+    _settingsLoaded = true;
     tryRender();
   });
 
   db.ref(`${ROOT}/teams`).on('value', snap => {
     _teams = snap.val() || {};
+    _teamsLoaded = true;
     tryRender();
   });
 
@@ -96,6 +101,7 @@ function initViewer() {
     const newMatches = snap.val() || {};
     checkForWinnerSmashAnimations(newMatches);
     _matches = newMatches;
+    _matchesLoaded = true;
     tryRender();
   });
 
@@ -178,13 +184,16 @@ function ensureThirdPlaceMatchExists() {
 }
 
 function tryRender() {
+  // Don't do anything until both matches and settings have loaded from Firebase
+  if (!_matchesLoaded || !_settingsLoaded) return;
+
   const matchKeys = Object.keys(_matches).filter(k => k !== 'm_third');
   if (!matchKeys.length) {
     showEmpty();
     return;
   }
 
-  // Always compute totalRounds & bracketSize from matches if missing or 0
+  // Compute totalRounds from meta or from match keys
   let maxR = 0;
   for (const k of matchKeys) {
     const m = _matches[k];
