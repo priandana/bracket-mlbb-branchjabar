@@ -314,25 +314,27 @@ function renderBracket() {
         <div class="round-matches" style="height:${BRACKET_H}px;" id="round-matches-${r}">`;
 
     for (const m of rMatches) {
-      html += `<div class="match-slot" style="height:${slotH}px;">
-                 ${renderMatchCard(m)}
-               </div>`;
+      if (r === totalRounds && _matches['m_third']) {
+        const m3 = _matches['m_third'];
+        html += `
+          <div class="match-slot" style="height:${slotH}px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px;">
+            ${renderMatchCard(m)}
+            <div class="third-place-box" style="width:100%;text-align:center;">
+              <div class="third-place-title" style="font-size:0.72rem;font-weight:800;color:#F59E0B;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <span>🥉 PEREBUTAN JUARA 3</span>
+                <span class="format-badge bo1" style="font-size:0.55rem;padding:1px 5px;">BO1</span>
+              </div>
+              ${renderMatchCard(m3)}
+            </div>
+          </div>`;
+      } else {
+        html += `<div class="match-slot" style="height:${slotH}px;">
+                   ${renderMatchCard(m)}
+                 </div>`;
+      }
     }
 
     html += `</div>`;
-
-    if (r === totalRounds && _matches['m_third']) {
-      const m3 = _matches['m_third'];
-      html += `
-        <div class="third-place-box" style="margin-top:24px;width:100%;text-align:center;">
-          <div class="third-place-title" style="font-size:0.72rem;font-weight:800;color:#F59E0B;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
-            <span>🥉 PEREBUTAN JUARA 3</span>
-            <span class="format-badge bo1" style="font-size:0.55rem;padding:1px 5px;">BO1</span>
-          </div>
-          ${renderMatchCard(m3)}
-        </div>`;
-    }
-
     html += `</div>`;
 
     if (r < totalRounds) {
