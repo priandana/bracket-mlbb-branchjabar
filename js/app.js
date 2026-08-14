@@ -181,10 +181,20 @@ function ensureThirdPlaceMatchExists() {
 }
 
 function tryRender() {
-  if (!_meta.totalRounds || !Object.keys(_matches).length) return;
-  ensureThirdPlaceMatchExists();
-  hideLoadingSpinner();
-  renderBracket();
+  if (!_meta.totalRounds || !Object.keys(_matches).length) {
+    if (Object.keys(_matches).length === 0 && _isInitialSettingsLoad === false) {
+      showEmpty();
+    }
+    return;
+  }
+  try {
+    ensureThirdPlaceMatchExists();
+    hideLoadingSpinner();
+    renderBracket();
+  } catch (err) {
+    console.error('Error in tryRender:', err);
+    hideLoadingSpinner();
+  }
 }
 
 function showEmpty() {
