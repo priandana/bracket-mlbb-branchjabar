@@ -291,6 +291,7 @@ function renderBracket() {
 // ── Helper to detect dead unused bracket slots ────────
 function isDeadSlot(m, matches) {
   if (!m) return true;
+  if (m.id === 'm_third' || m.isThirdPlace) return false;
   if (m.team1 || m.team2) return false;
   if (m.round === 1) {
     return !m.team1 && !m.team2;
