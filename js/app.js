@@ -159,8 +159,30 @@ function hideLoadingSpinner() {
   if (loading) loading.style.display = 'none';
 }
 
+function ensureThirdPlaceMatchExists() {
+  const tot = _meta.totalRounds || 4;
+  if (tot >= 2 && !_matches['m_third']) {
+    _matches['m_third'] = {
+      id: 'm_third',
+      round: Math.max(1, tot - 1),
+      position: 99,
+      isThirdPlace: true,
+      roundName: 'PEREBUTAN JUARA 3',
+      roundDate: getRoundDate(tot, tot),
+      format: 'BO1',
+      team1: null,
+      team2: null,
+      winner: null,
+      isBye: false,
+      status: 'pending',
+      games: { g1: null, g2: null, g3: null }
+    };
+  }
+}
+
 function tryRender() {
   if (!_meta.totalRounds || !Object.keys(_matches).length) return;
+  ensureThirdPlaceMatchExists();
   hideLoadingSpinner();
   renderBracket();
 }
@@ -198,7 +220,7 @@ function renderBracket() {
   html += `<svg id="bracket-svg" xmlns="http://www.w3.org/2000/svg"></svg>`;
 
   for (let r = 1; r <= totalRounds; r++) {
-    const rMatches   = rounds[r] || [];
+    const rMatches   = (rounds[r] || []).filter(m => m.id !== 'm_third');
     const numMatches = bracketSize / Math.pow(2, r);
     const slotH      = BRACKET_H / numMatches;
     const isBO3      = rMatches.length > 0 && rMatches[0].format === 'BO3';
@@ -222,7 +244,21 @@ function renderBracket() {
                </div>`;
     }
 
-    html += `</div></div>`;
+    html += `</div>`;
+
+    if (r === totalRounds && _matches['m_third']) {
+      const m3 = _matches['m_third'];
+      html += `
+        <div class="third-place-box" style="margin-top:24px;width:100%;text-align:center;">
+          <div class="third-place-title" style="font-size:0.72rem;font-weight:800;color:#F59E0B;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <span>🥉 PEREBUTAN JUARA 3</span>
+            <span class="format-badge bo1" style="font-size:0.55rem;padding:1px 5px;">BO1</span>
+          </div>
+          ${renderMatchCard(m3)}
+        </div>`;
+    }
+
+    html += `</div>`;
 
     if (r < totalRounds) {
       html += `<div class="connector-gap" id="cgap-${r}" style="width:52px;height:${BRACKET_H}px;flex-shrink:0;"></div>`;
@@ -664,11 +700,26 @@ async function quickAdminPickWinner(matchId, winnerTeamId) {
   updates[`${ROOT}/matches/${m.id}/status`] = 'done';
 
   const totalRounds = _meta.totalRounds || 4;
-  const next = getNextMatchInfo(m.round, m.position, totalRounds);
-  if (next) {
-    updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = winnerTeamId;
-  } else {
-    updates[`${ROOT}/settings/status`] = 'done';
+
+  if (m.id !== 'm_third') {
+    const next = getNextMatchInfo(m.round, m.position, totalRounds);
+    if (next) {
+      updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = winnerTeamId;
+    } else {
+      updates[`${ROOT}/settings/status`] = 'done';
+    }
+
+    // Auto-advance loser of Semifinal to 3rd Place Match (m_third)
+    if (m.round === (totalRounds - 1)) {
+      const loserId = m.team1 === winnerTeamId ? m.team2 : (m.team2 === winnerTeamId ? m.team1 : null);
+      const slot = m.position === 0 ? 'team1' : 'team2';
+      updates[`${ROOT}/matches/m_third/id`] = 'm_third';
+      updates[`${ROOT}/matches/m_third/round`] = totalRounds - 1;
+      updates[`${ROOT}/matches/m_third/roundName`] = 'PEREBUTAN JUARA 3';
+      updates[`${ROOT}/matches/m_third/format`] = 'BO1';
+      updates[`${ROOT}/matches/m_third/isThirdPlace`] = true;
+      updates[`${ROOT}/matches/m_third/${slot}`] = loserId;
+    }
   }
 
   try {
@@ -691,11 +742,22 @@ async function quickAdminResetMatch(matchId) {
   updates[`${ROOT}/matches/${m.id}/status`] = 'pending';
 
   const totalRounds = _meta.totalRounds || 4;
-  const next = getNextMatchInfo(m.round, m.position, totalRounds);
-  if (next) {
-    updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = null;
-    updates[`${ROOT}/matches/${next.matchId}/winner`] = null;
-    updates[`${ROOT}/matches/${next.matchId}/status`] = 'pending';
+
+  if (m.id !== 'm_third') {
+    const next = getNextMatchInfo(m.round, m.position, totalRounds);
+    if (next) {
+      updates[`${ROOT}/matches/${next.matchId}/${next.slot}`] = null;
+      updates[`${ROOT}/matches/${next.matchId}/winner`] = null;
+      updates[`${ROOT}/matches/${next.matchId}/status`] = 'pending';
+    }
+
+    // Reset 3rd Place Match slot if Semifinal match is reset
+    if (m.round === (totalRounds - 1)) {
+      const slot = m.position === 0 ? 'team1' : 'team2';
+      updates[`${ROOT}/matches/m_third/${slot}`] = null;
+      updates[`${ROOT}/matches/m_third/winner`] = null;
+      updates[`${ROOT}/matches/m_third/status`] = 'pending';
+    }
   }
 
   try {

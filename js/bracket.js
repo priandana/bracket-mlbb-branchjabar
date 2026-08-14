@@ -192,6 +192,24 @@ function generateBracketFromPairings(pairings, totalRounds, bracketSize) {
         }
       }
     }
+  // ── 5. Create 3rd Place Match (Perebutan Juara 3 - BO1) ──────
+  if (totalRounds >= 2) {
+    const sfRound = Math.max(1, totalRounds - 1);
+    matches['m_third'] = {
+      id: 'm_third',
+      round: sfRound,
+      position: 99,
+      isThirdPlace: true,
+      roundName: 'PEREBUTAN JUARA 3',
+      roundDate: getRoundDate(totalRounds, totalRounds),
+      format: 'BO1',
+      team1: null,
+      team2: null,
+      winner: null,
+      isBye: false,
+      status: 'pending',
+      games: { g1: null, g2: null, g3: null }
+    };
   }
 
   return { bracketSize, totalRounds, matches };
