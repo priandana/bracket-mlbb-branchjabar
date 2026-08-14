@@ -171,6 +171,16 @@ function _getRoundDate(round, total) {
   return '13 Agustus 2026';
 }
 
+function _getRoundName(round, total) {
+  const fromEnd = total - round;
+  if (fromEnd === 0) return 'Grand Final';
+  if (fromEnd === 1) return 'Semi Final';
+  if (fromEnd === 2) return 'Quarter Final';
+  if (fromEnd === 3) return 'Round of 16';
+  if (fromEnd === 4) return 'Round of 32';
+  return `Round ${round}`;
+}
+
 function ensureThirdPlaceMatchExists() {
   const tot = _meta.totalRounds || 4;
   if (tot >= 2 && !_matches['m_third']) {
@@ -267,8 +277,8 @@ function renderBracket() {
     const numMatches = bracketSize / Math.pow(2, r);
     const slotH      = BRACKET_H / numMatches;
     const isBO3      = rMatches.length > 0 && rMatches[0].format === 'BO3';
-    const roundName  = rMatches.length > 0 ? rMatches[0].roundName : getRoundName(r, totalRounds);
-    const roundDate  = (rMatches.length > 0 && rMatches[0].roundDate) ? rMatches[0].roundDate : getRoundDate(r, totalRounds);
+    const roundName  = rMatches.length > 0 ? rMatches[0].roundName : _getRoundName(r, totalRounds);
+    const roundDate  = (rMatches.length > 0 && rMatches[0].roundDate) ? rMatches[0].roundDate : _getRoundDate(r, totalRounds);
 
     html += `
       <div class="round-col" id="round-col-${r}">
@@ -630,7 +640,7 @@ function openViewerMatchModal(matchId) {
   const vmDateEl = document.getElementById('vm-date');
   if (vmDateEl) {
     const tot = (_meta && _meta.totalRounds) || 4;
-    vmDateEl.textContent = m.roundDate || getRoundDate(m.round, tot);
+    vmDateEl.textContent = m.roundDate || _getRoundDate(m.round, tot);
   }
 
   const body = document.getElementById('vm-body');
@@ -906,7 +916,7 @@ function renderNextMatchOverview(matchId, endTimeMs) {
   }
 
   const roundTitle = targetMatch ? targetMatch.roundName.toUpperCase() : 'ROUND OF 16';
-  const rDate = targetMatch ? (targetMatch.roundDate || getRoundDate(targetMatch.round, _meta.totalRounds || 4)) : '13 AGUSTUS 2026';
+  const rDate = targetMatch ? (targetMatch.roundDate || _getRoundDate(targetMatch.round, _meta.totalRounds || 4)) : '13 AGUSTUS 2026';
   const fmt = targetMatch ? targetMatch.format : 'BO1';
 
   document.getElementById('bo-round-title').textContent = roundTitle;
