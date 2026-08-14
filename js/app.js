@@ -934,20 +934,19 @@ function getRoleBadgeHTML(roleStr) {
 function renderRosterCardsHTML(teamId, teamName, isBlueSide) {
   const rosterData = typeof getTeamRoster === 'function' ? getTeamRoster(teamId, teamName) : null;
   const sideClass  = isBlueSide ? 'blue-side' : 'red-side';
-  const emblemText = getInitials(teamName || (isBlueSide ? 'BLUE' : 'RED'));
+  const emblemText = getInitials(teamName || (isBlueSide ? 'T1' : 'T2'));
   const displayName = teamName || 'TBD';
-  const sideTag = isBlueSide ? '🔵 RADIANT SIDE' : '🔴 DIRE SIDE';
 
   let playersHTML = '';
   if (rosterData && rosterData.players && rosterData.players.length > 0) {
     playersHTML = rosterData.players.map((p, idx) => {
       return `
-        <div class="roster-item" style="animation-delay: ${idx * 0.05}s">
+        <div class="roster-item">
           <div class="roster-player-left">
-            <span class="roster-num">0${idx + 1}</span>
+            <span class="roster-num">${idx + 1}</span>
             <div class="roster-player-info">
               <span class="roster-nick">${esc(p.nickname || p.name)}</span>
-              <span class="roster-real">${esc(p.name)} <em class="roster-division">(${esc(p.division)})</em></span>
+              <span class="roster-real">${esc(p.name)} <span class="roster-division">(${esc(p.division)})</span></span>
             </div>
           </div>
           ${getRoleBadgeHTML(p.role)}
@@ -955,18 +954,16 @@ function renderRosterCardsHTML(teamId, teamName, isBlueSide) {
     }).join('');
   } else {
     playersHTML = `
-      <div style="padding:32px 16px;text-align:center;color:var(--text-3);font-size:0.9rem;font-weight:600;">
-        ⏳ Roster pemain akan segera diumumkan
+      <div style="padding:28px 16px;text-align:center;color:var(--text-3);font-size:0.88rem;font-weight:600;">
+        Roster pemain belum diisi
       </div>`;
   }
 
   return `
     <div class="break-team-card ${sideClass}">
-      <div class="break-team-glow"></div>
       <div class="break-team-header">
         <div class="break-team-emblem">${emblemText}</div>
         <div class="break-team-meta">
-          <span class="break-side-tag">${sideTag}</span>
           <div class="break-team-name">${esc(displayName)}</div>
         </div>
       </div>
@@ -1040,16 +1037,13 @@ function renderNextMatchOverview(matchId, endTimeMs) {
     <div class="break-arena-grid">
       ${t1HTML}
       <div class="break-vs-center">
-        <div class="break-vs-wrapper">
-          <div class="break-vs-glow-ring"></div>
-          <div class="break-vs-shield">VS</div>
-        </div>
+        <div class="break-vs-shield">VS</div>
         <div class="break-timer-box">
           <div class="timer-val" id="bo-timer-display">READY</div>
-          <div class="timer-lbl">⏱️ COUNTDOWN MATCH</div>
+          <div class="timer-lbl">COUNTDOWN MATCH</div>
         </div>
         <div class="break-format-indicator">
-          <span class="fmt-pill ${fmt.toLowerCase()}">⚔️ ${fmt} MATCH</span>
+          <span class="fmt-pill ${fmt.toLowerCase()}">${fmt} MATCH</span>
         </div>
       </div>
       ${t2HTML}
